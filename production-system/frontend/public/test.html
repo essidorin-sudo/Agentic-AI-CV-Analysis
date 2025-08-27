@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test Page</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 40px; 
+            text-align: center; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 { color: #fff; margin-bottom: 20px; }
+        .success { 
+            background: #22c55e; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 20px 0;
+            color: white;
+            font-weight: bold;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Frontend Debug Test</h1>
+        <div class="success">✅ Static HTML is working!</div>
+        
+        <p>This is a plain HTML page served by Vite to test if the server is working correctly.</p>
+        
+        <button onclick="alert('JavaScript is working!')">Test JavaScript</button>
+        <button onclick="window.location.href='/'">Back to React App</button>
+        
+        <hr style="margin: 30px 0; border: 1px solid rgba(255,255,255,0.3);">
+        
+        <h3>Debug Information:</h3>
+        <p><strong>Time:</strong> <span id="time"></span></p>
+        <p><strong>User Agent:</strong> <span id="ua"></span></p>
+        <p><strong>URL:</strong> <span id="url"></span></p>
+    </div>
+    
+    <script>
+        // Update debug info
+        document.getElementById('time').textContent = new Date().toLocaleString();
+        document.getElementById('ua').textContent = navigator.userAgent;
+        document.getElementById('url').textContent = window.location.href;
+        
+        console.log('🔧 Debug test page loaded successfully');
+        console.log('Server is serving static files correctly');
+        console.log('If you see this in console, JavaScript execution is working');
+    </script>
+</body>
+</html>

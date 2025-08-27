@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Analysis Results - What User Actually Sees</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .panel {
+            background: #111111;
+            border: 1px solid #333333;
+            border-radius: 8px;
+        }
+        
+        .panel-header {
+            background: #1a1a1a;
+            border-bottom: 1px solid #333333;
+            padding: 12px 16px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .panel-content {
+            padding: 16px;
+            min-width: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* This is the EXACT CSS from the frontend */
+        .cv-content {
+            min-width: 0;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background: #0a0a0a;
+            color: white;
+            padding: 16px;
+            border: 1px solid #333;
+        }
+        
+        .highlight-match {
+            background-color: #27ca3f;
+            color: #000000;
+            padding: 2px 4px;
+            font-weight: 600;
+        }
+        
+        .highlight-potential {
+            background-color: #ffbd2e;
+            color: #000000;
+            padding: 2px 4px;
+            font-weight: 600;
+        }
+        
+        .highlight-gap {
+            background-color: #ff5f56;
+            color: #ffffff;
+            padding: 2px 4px;
+            font-weight: 600;
+        }
+        
+        .diagnosis {
+            background: #ff0000;
+            color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .success {
+            background: #00ff00;
+            color: black;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CV ANALYSIS RESULTS - EXACT USER EXPERIENCE</h1>
+        
+        <div class="success">
+            ✅ Mixed highlighting detected
+        </div>
+        
+        <p><strong>Match Score:</strong> 82.0%</p>
+        <p><strong>Highlighting Counts:</strong></p>
+        <ul>
+            <li>CV: Green=5, Yellow=1, Red=0</li>
+            <li>JD: Green=4, Yellow=2, Red=0</li>
+        </ul>
+        
+        <div class="results-grid">
+            <div class="panel">
+                <div class="panel-header">CV ANALYSIS</div>
+                <div class="panel-content">
+                    <div class="cv-content highlighted-content">John Smith
+Software Engineer
+john.smith@email.com
+Phone: (555) 123-4567
+
+EXPERIENCE:
+<span class="highlight-match" title="Senior role with Python/React development matches requirements">Senior Software Developer at TechCorp (2020-2023)</span>
+<span class="highlight-match" title="Python development experience with frameworks">• Built scalable Python applications using Flask and Django frameworks</span>
+<span class="highlight-match" title="React and TypeScript experience matches frontend requirements">• Developed React frontend applications with TypeScript and modern JavaScript</span>
+<span class="highlight-potential" title="AWS deployment experience could be elaborated">• Deployed cloud infrastructure on AWS using Docker containers</span>
+<span class="highlight-match" title="Team leadership experience matches mentoring requirement">• Led a team of 3 junior developers on multiple projects</span>
+<span class="highlight-match" title="PostgreSQL database design experience matches requirement">• Designed PostgreSQL database schemas for large-scale applications</span>
+
+Junior Developer at StartupCo (2018-2020)
+• JavaScript web application development
+• Database design and optimization with PostgreSQL
+• Collaborated with cross-functional teams on agile projects
+
+EDUCATION:
+Bachelor of Science in Computer Science
+University of Technology (2014-2018)
+
+SKILLS:
+Programming Languages: Python, JavaScript, TypeScript, SQL
+Frameworks: Flask, Django, React, Node.js
+Cloud & DevOps: AWS, Docker, Git, CI/CD
+Databases: PostgreSQL, MongoDB
+Other: Agile/Scrum, Team Leadership</div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">JOB DESCRIPTION ANALYSIS</div>
+                <div class="panel-content">
+                    <div class="cv-content highlighted-content">Senior Software Engineer Position
+San Francisco, CA | Remote-Friendly
+Salary: $120,000 - $160,000
+
+ABOUT THE ROLE:
+We are seeking a Senior Software Engineer to join our growing engineering team. You will be responsible for designing, developing, and maintaining scalable web applications that serve millions of users worldwide.
+
+REQUIREMENTS:
+<span class="highlight-potential" title="Python experience present but duration unclear">• 5+ years of professional Python development experience</span>
+<span class="highlight-match" title="React/JavaScript requirement satisfied">• Strong experience with React and modern JavaScript frameworks</span>
+<span class="highlight-potential" title="AWS/Docker mentioned in CV but depth unclear">• Proficiency with AWS cloud platform and containerization (Docker)</span>
+• Experience with Docker containerization and deployment
+<span class="highlight-match" title="PostgreSQL experience requirement met">• Database design experience, preferably PostgreSQL</span>
+<span class="highlight-match" title="Leadership experience requirement satisfied">• Leadership experience mentoring junior developers</span>
+<span class="highlight-match" title="CS degree requirement met">• Bachelor's degree in Computer Science or related field</span>
+
+RESPONSIBILITIES:
+• Lead development of scalable web applications and APIs
+• Mentor and guide junior developers in best practices
+• Design and implement system architecture and technical solutions
+• Deploy and maintain cloud infrastructure on AWS
+• Collaborate with product and design teams on feature development
+• Participate in code reviews and maintain high coding standards
+
+NICE TO HAVE:
+• Experience with microservices architecture
+• Knowledge of machine learning and AI technologies
+• Experience with agile development methodologies
+• Open source contributions
+
+BENEFITS:
+• Competitive salary and equity package
+• Comprehensive health, dental, and vision insurance
+• 401(k) with company matching
+• Flexible PTO policy
+• $2,000 annual learning and development budget</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

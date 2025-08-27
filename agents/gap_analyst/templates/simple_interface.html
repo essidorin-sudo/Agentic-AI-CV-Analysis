@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI CV-JD Gap Analysis - Smart Matching System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        /* Section 1: Input Section */
+        .input-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            color: #495057;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .panel-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-input-group {
+            margin-bottom: 20px;
+        }
+
+        .file-input-group label {
+            display: block;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .text-input-group {
+            margin-bottom: 20px;
+        }
+
+        .text-input-group label {
+            display: block;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .text-input {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Section 2: Analysis Section */
+        .analysis-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .analysis-trigger {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .analyze-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .analyze-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+
+        .step-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .step-pending { background: #6c757d; }
+        .step-processing { background: #ffc107; animation: pulse 1s infinite; }
+        .step-completed { background: #28a745; }
+        .step-failed { background: #dc3545; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .comparison-panel {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .panel-title {
+            background: #495057;
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .content-display {
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .summary-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .summary-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .score-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .score-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .analysis-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .detail-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .detail-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .detail-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .detail-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+        }
+
+        .detail-list li:last-child {
+            border-bottom: none;
+        }
+
+        .highlight-match { background: #d4edda; padding: 2px 4px; border-radius: 3px; }
+        .highlight-gap { background: #f8d7da; padding: 2px 4px; border-radius: 3px; }
+        .highlight-potential { background: #fff3cd; padding: 2px 4px; border-radius: 3px; }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        /* Status Cards */
+        .status-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-header {
+            background: #495057;
+            color: white;
+            padding: 10px 15px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .status-body {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .status-icon {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .status-icon.pending { color: #6c757d; }
+        .status-icon.processing { color: #ffc107; animation: pulse 1s infinite; }
+        .status-icon.completed { color: #28a745; }
+        .status-icon.failed { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 AI CV-JD Gap Analysis</h1>
+            <p>Upload your CV and Job Description to get intelligent matching analysis and personalized recommendations</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Section 1: Input Section -->
+            <div class="input-section">
+                <div class="section-title">📄 Step 1: Upload Your Documents</div>
+                
+                <div class="input-grid">
+                    <!-- CV Panel -->
+                    <div class="input-panel">
+                        <div class="panel-header">
+                            📋 Your CV/Resume
+                        </div>
+                        
+                        <div class="file-input-group">
+                            <label for="cvFile">Upload CV File (PDF, DOC, DOCX)</label>
+                            <input type="file" id="cvFile" class="file-input" accept=".pdf,.doc,.docx" onchange="handleCVUpload(event)">
+                        </div>
+                        
+                        <div class="text-input-group">
+                            <label for="cvText">OR Paste CV Text</label>
+                            <textarea id="cvText" class="text-input" placeholder="Paste your CV content here..."></textarea>
+                        </div>
+                        
+                        <button class="submit-btn" onclick="processCVContent()" id="cvSubmitBtn">
+                            📤 Process CV
+                        </button>
+                    </div>
+
+                    <!-- JD Panel -->
+                    <div class="input-panel">
+                        <div class="panel-header">
+                            💼 Job Description
+                        </div>
+                        
+                        <div class="text-input-group">
+                            <label for="jdText">Job Description Text</label>
+                            <textarea id="jdText" class="text-input" placeholder="Paste the job description here..."></textarea>
+                        </div>
+                        
+                        <div class="text-input-group">
+                            <label for="jdUrl">OR Job Description URL</label>
+                            <input type="url" id="jdUrl" class="text-input" style="height: auto;" placeholder="https://company.com/job-posting">
+                        </div>
+                        
+                        <button class="submit-btn" onclick="processJDContent()" id="jdSubmitBtn">
+                            📤 Process JD
+                        </button>
+                    </div>
+                </div>
+
+                <div id="statusMessages"></div>
+                
+                <!-- Processing Status Indicators -->
+                <div class="processing-status" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                    <div class="status-card" id="cvStatusCard">
+                        <div class="status-header">📋 CV Processing Status</div>
+                        <div class="status-body" id="cvStatus">
+                            <span class="status-icon pending">⏳</span>
+                            <span>Waiting for CV upload...</span>
+                        </div>
+                    </div>
+                    <div class="status-card" id="jdStatusCard">
+                        <div class="status-header">💼 JD Processing Status</div>
+                        <div class="status-body" id="jdStatus">
+                            <span class="status-icon pending">⏳</span>
+                            <span>Waiting for JD input...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Analysis Section -->
+            <div class="analysis-section">
+                <div class="section-title">🔬 Step 2: Run Gap Analysis</div>
+                
+                <div class="analysis-trigger">
+                    <button class="analyze-btn" onclick="startGapAnalysis()" id="analyzeBtn" disabled>
+                        🚀 Start Complete Analysis
+                    </button>
+                    <p style="margin-top: 10px; color: #6c757d; font-style: italic;">
+                        Both CV and JD must be processed first
+                    </p>
+                </div>
+
+                <!-- Progress Container -->
+                <div class="progress-container" id="progressContainer">
+                    <h4 style="margin-bottom: 15px;">Analysis Progress:</h4>
+                    <div class="progress-step" id="step1">
+                        <div class="step-icon step-pending">1</div>
+                        <span>Processing CV through AI Parser...</span>
+                    </div>
+                    <div class="progress-step" id="step2">
+                        <div class="step-icon step-pending">2</div>
+                        <span>Processing JD through AI Parser...</span>
+                    </div>
+                    <div class="progress-step" id="step3">
+                        <div class="step-icon step-pending">3</div>
+                        <span>Running Intelligent Gap Analysis...</span>
+                    </div>
+                    <div class="progress-step" id="step4">
+                        <div class="step-icon step-pending">4</div>
+                        <span>Generating Recommendations...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection">
+                <div class="section-title">📊 Step 3: Analysis Results</div>
+                
+                <!-- Side-by-side comparison -->
+                <div class="comparison-grid">
+                    <div class="comparison-panel">
+                        <div class="panel-title">📋 Your CV (Highlighted)</div>
+                        <div class="content-display" id="cvHighlighted">
+                            Results will appear here after analysis...
+                        </div>
+                    </div>
+                    <div class="comparison-panel">
+                        <div class="panel-title">💼 Job Requirements (Highlighted)</div>
+                        <div class="content-display" id="jdHighlighted">
+                            Results will appear here after analysis...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Summary -->
+                <div class="summary-section">
+                    <div class="summary-title">📈 Match Analysis Summary</div>
+                    
+                    <div class="score-container" id="scoresContainer">
+                        <!-- Scores will be populated here -->
+                    </div>
+
+                    <div class="analysis-details">
+                        <div class="detail-section">
+                            <div class="detail-title">💪 Your Strengths</div>
+                            <ul class="detail-list" id="strengthsList">
+                                <!-- Strengths will be populated here -->
+                            </ul>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">⚠️ Skill Gaps</div>
+                            <ul class="detail-list" id="gapsList">
+                                <!-- Gaps will be populated here -->
+                            </ul>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">🎯 Recommendations</div>
+                            <ul class="detail-list" id="recommendationsList">
+                                <!-- Recommendations will be populated here -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cvData = null;
+        let jdData = null;
+        let cvProcessed = false;
+        let jdProcessed = false;
+
+        function showStatus(message, type = 'success') {
+            const container = document.getElementById('statusMessages');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.textContent = message;
+            container.appendChild(statusDiv);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (statusDiv.parentNode) {
+                    statusDiv.parentNode.removeChild(statusDiv);
+                }
+            }, 5000);
+        }
+
+        function updateAnalyzeButton() {
+            const btn = document.getElementById('analyzeBtn');
+            if (cvProcessed && jdProcessed) {
+                btn.disabled = false;
+                btn.textContent = '🚀 Start Complete Analysis';
+            } else {
+                btn.disabled = true;
+                const missing = [];
+                if (!cvProcessed) missing.push('CV');
+                if (!jdProcessed) missing.push('JD');
+                btn.textContent = `⏳ Waiting for ${missing.join(' and ')}`;
+            }
+        }
+
+        function updateStatusCard(type, status, message) {
+            const statusElement = document.getElementById(`${type}Status`);
+            const icon = statusElement.querySelector('.status-icon');
+            const text = statusElement.querySelector('span:last-child') || statusElement.appendChild(document.createElement('span'));
+            
+            // Update icon
+            icon.className = `status-icon ${status}`;
+            switch(status) {
+                case 'pending':
+                    icon.textContent = '⏳';
+                    break;
+                case 'processing':
+                    icon.textContent = '🔄';
+                    break;
+                case 'completed':
+                    icon.textContent = '✅';
+                    break;
+                case 'failed':
+                    icon.textContent = '❌';
+                    break;
+            }
+            
+            // Update text
+            text.textContent = message;
+        }
+
+        function handleCVUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Clear text area when file is selected
+                document.getElementById('cvText').value = '';
+                showStatus(`CV file selected: ${file.name}`, 'success');
+            }
+        }
+
+        async function processCVContent() {
+            const fileInput = document.getElementById('cvFile');
+            const textInput = document.getElementById('cvText');
+            const submitBtn = document.getElementById('cvSubmitBtn');
+            
+            const file = fileInput.files[0];
+            const text = textInput.value.trim();
+            
+            if (!file && !text) {
+                showStatus('Please upload a CV file or paste CV text', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Processing CV...';
+            updateStatusCard('cv', 'processing', 'Processing CV through AI Parser...');
+
+            try {
+                let response;
+                
+                if (file) {
+                    // Process file
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    response = await fetch('http://localhost:5004/parse_file', {
+                        method: 'POST',
+                        body: formData
+                    });
+                } else {
+                    // Process text
+                    response = await fetch('http://localhost:5004/parse', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({cv_text: text})
+                    });
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    cvData = data.result;
+                    cvProcessed = true;
+                    updateAnalyzeButton();
+                    updateStatusCard('cv', 'completed', `✅ CV processed! Confidence: ${(data.result.confidence_score * 100).toFixed(1)}%`);
+                    showStatus(`✅ CV processed successfully! Confidence: ${(data.result.confidence_score * 100).toFixed(1)}%`, 'success');
+                } else {
+                    updateStatusCard('cv', 'failed', `❌ Processing failed: ${data.error}`);
+                    showStatus(`CV processing failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                updateStatusCard('cv', 'failed', `❌ Network error: ${error.message}`);
+                showStatus(`CV processing error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Process CV';
+            }
+        }
+
+        async function processJDContent() {
+            const textInput = document.getElementById('jdText');
+            const urlInput = document.getElementById('jdUrl');
+            const submitBtn = document.getElementById('jdSubmitBtn');
+            
+            const text = textInput.value.trim();
+            const url = urlInput.value.trim();
+            
+            if (!text && !url) {
+                showStatus('Please provide job description text or URL', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Processing JD...';
+            updateStatusCard('jd', 'processing', 'Processing JD through AI Parser...');
+
+            try {
+                const payload = {};
+                if (url) {
+                    payload.jd_url = url;
+                } else {
+                    payload.jd_text = text;
+                }
+
+                const response = await fetch('http://localhost:5007/parse', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    jdData = data.result;
+                    jdProcessed = true;
+                    updateAnalyzeButton();
+                    updateStatusCard('jd', 'completed', '✅ JD processed successfully!');
+                    showStatus('✅ Job description processed successfully!', 'success');
+                } else {
+                    updateStatusCard('jd', 'failed', `❌ Processing failed: ${data.error}`);
+                    showStatus(`JD processing failed: ${data.error}`, 'error');
+                    console.error('JD Processing Error Details:', data);
+                }
+            } catch (error) {
+                updateStatusCard('jd', 'failed', `❌ Network error: ${error.message}`);
+                showStatus(`JD processing error: ${error.message}`, 'error');
+                console.error('JD Processing Network Error:', error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Process JD';
+            }
+        }
+
+        async function startGapAnalysis() {
+            if (!cvData || !jdData) {
+                showStatus('Both CV and JD must be processed first', 'error');
+                return;
+            }
+
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const resultsSection = document.getElementById('resultsSection');
+
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = '🔬 Analyzing...';
+            progressContainer.style.display = 'block';
+            resultsSection.style.display = 'none';
+
+            // Update progress steps
+            updateProgressStep(1, 'completed');
+            updateProgressStep(2, 'completed');
+            updateProgressStep(3, 'processing');
+
+            try {
+                // Debug: Log what data we're sending
+                console.log('Sending CV Data:', cvData?.full_name || 'No CV data');
+                console.log('Sending JD Data:', jdData?.job_title || 'No JD data', jdData?.company_name || 'No company');
+                
+                const response = await fetch('http://localhost:5006/analyze_gap', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        cv_data: cvData,
+                        jd_data: jdData
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateProgressStep(3, 'completed');
+                    updateProgressStep(4, 'processing');
+                    
+                    // Small delay for UX
+                    setTimeout(() => {
+                        updateProgressStep(4, 'completed');
+                        displayResults(data.result);
+                        progressContainer.style.display = 'none';
+                        resultsSection.style.display = 'block';
+                        showStatus('🎉 Gap analysis completed successfully!', 'success');
+                    }, 1000);
+                } else {
+                    updateProgressStep(3, 'failed');
+                    showStatus(`Analysis failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                updateProgressStep(3, 'failed');
+                showStatus(`Analysis error: ${error.message}`, 'error');
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = '🚀 Start Complete Analysis';
+            }
+        }
+
+        function updateProgressStep(stepNum, status) {
+            const step = document.getElementById(`step${stepNum}`);
+            const icon = step.querySelector('.step-icon');
+            
+            icon.className = `step-icon step-${status}`;
+            
+            if (status === 'completed') {
+                icon.textContent = '✓';
+            } else if (status === 'failed') {
+                icon.textContent = '✗';
+            } else {
+                icon.textContent = stepNum;
+            }
+        }
+
+        function displayResults(result) {
+            // Debug: Log the result structure
+            console.log('Gap Analysis Result:', result);
+            console.log('CV Highlighted:', result.cv_highlighted);
+            console.log('JD Highlighted:', result.jd_highlighted);
+            
+            // Display highlighted HTML content directly (should be HTML strings now)
+            document.getElementById('cvHighlighted').innerHTML = result.cv_highlighted || 'No CV highlighting available';
+            document.getElementById('jdHighlighted').innerHTML = result.jd_highlighted || 'No JD highlighting available';
+
+            // Display scores
+            const scoresContainer = document.getElementById('scoresContainer');
+            const scores = result.match_score;
+            
+            // Debug: Log actual score values to help identify the issue
+            console.log('Raw Score Values:', scores);
+            console.log('Overall Score:', scores.overall_score);
+            console.log('Skills Score:', scores.skills_score);
+            scoresContainer.innerHTML = `
+                <div class="score-item">
+                    <div class="score-value">${scores.overall_score.toFixed(1)}%</div>
+                    <div class="score-label">Overall Match</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">${scores.skills_score.toFixed(1)}%</div>
+                    <div class="score-label">Skills Match</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">${scores.experience_score.toFixed(1)}%</div>
+                    <div class="score-label">Experience Match</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">${scores.education_score.toFixed(1)}%</div>
+                    <div class="score-label">Education Match</div>
+                </div>
+            `;
+
+            // Display details
+            displayDetailList('strengthsList', scores.strengths);
+            displayDetailList('gapsList', scores.gaps);
+            displayDetailList('recommendationsList', scores.recommendations);
+        }
+
+        function formatDisplayContent(content, type) {
+            if (!content) {
+                return `No ${type} highlighting available`;
+            }
+            
+            if (typeof content === 'string') {
+                return content;
+            }
+            
+            if (typeof content === 'object') {
+                // If it's an object, convert to readable format
+                let formatted = `<div class="content-breakdown">`;
+                formatted += `<h4>${type} Content:</h4>`;
+                
+                if (content.full_name) {
+                    formatted += `<p><strong>Name:</strong> ${content.full_name}</p>`;
+                }
+                if (content.job_title) {
+                    formatted += `<p><strong>Job Title:</strong> ${content.job_title}</p>`;
+                }
+                if (content.key_skills && content.key_skills.length > 0) {
+                    formatted += `<p><strong>Skills:</strong> ${content.key_skills.join(', ')}</p>`;
+                }
+                if (content.required_skills && content.required_skills.length > 0) {
+                    formatted += `<p><strong>Required Skills:</strong> ${content.required_skills.join(', ')}</p>`;
+                }
+                if (content.work_experience && content.work_experience.length > 0) {
+                    formatted += `<p><strong>Experience:</strong></p><ul>`;
+                    content.work_experience.forEach(exp => {
+                        if (typeof exp === 'object') {
+                            formatted += `<li>${exp.position || 'Position'} at ${exp.company || 'Company'} (${exp.duration || 'Duration'})</li>`;
+                        } else {
+                            formatted += `<li>${exp}</li>`;
+                        }
+                    });
+                    formatted += `</ul>`;
+                }
+                if (content.education && content.education.length > 0) {
+                    formatted += `<p><strong>Education:</strong></p><ul>`;
+                    content.education.forEach(edu => {
+                        if (typeof edu === 'object') {
+                            formatted += `<li>${edu.degree || 'Degree'} in ${edu.field || 'Field'} from ${edu.institution || 'Institution'}</li>`;
+                        } else {
+                            formatted += `<li>${edu}</li>`;
+                        }
+                    });
+                    formatted += `</ul>`;
+                }
+                
+                formatted += `</div>`;
+                return formatted;
+            }
+            
+            return String(content);
+        }
+
+        function displayDetailList(elementId, items) {
+            const element = document.getElementById(elementId);
+            if (items && items.length > 0) {
+                element.innerHTML = items.map(item => `<li>${item}</li>`).join('');
+            } else {
+                element.innerHTML = '<li style="color: #6c757d; font-style: italic;">No items available</li>';
+            }
+        }
+    </script>
+</body>
+</html>

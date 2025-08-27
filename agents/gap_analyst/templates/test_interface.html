@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gap Analyst Agent - Testing Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .status-bar {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online { background: #4CAF50; }
+        .status-offline { background: #f44336; }
+        .status-processing { background: #FF9800; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .main-interface {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .section-content {
+            padding: 25px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+
+        .prompt-section {
+            margin-bottom: 25px;
+        }
+
+        .prompt-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .prompt-textarea {
+            width: 100%;
+            height: 300px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .prompt-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .analysis-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .analysis-panel {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .cv-header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .jd-header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+
+        .analysis-content {
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .highlight-green {
+            background-color: #c8e6c9;
+            padding: 2px 4px;
+            border-radius: 3px;
+            border-left: 3px solid #4caf50;
+        }
+
+        .highlight-yellow {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            border-left: 3px solid #ffc107;
+        }
+
+        .highlight-red {
+            background-color: #f8d7da;
+            padding: 2px 4px;
+            border-radius: 3px;
+            border-left: 3px solid #dc3545;
+        }
+
+        .cv-section, .jd-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .skill-tag, .requirement-tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin: 2px 4px 2px 0;
+        }
+
+        .work-item, .requirement-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #4CAF50;
+        }
+
+        .work-title, .requirement-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .work-company, .requirement-level {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .scoring-section {
+            margin-top: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .scoring-header {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .scoring-content {
+            padding: 25px;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .score-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .recommendations, .strengths, .gaps {
+            margin-bottom: 20px;
+        }
+
+        .recommendation-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .recommendation-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .recommendation-item:last-child {
+            border-bottom: none;
+        }
+
+        .strengths .recommendation-item {
+            color: #2e7d32;
+        }
+
+        .gaps .recommendation-item {
+            color: #c62828;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f44336;
+            margin-top: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 30px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+
+        .info-box-content {
+            color: #1565c0;
+            font-size: 0.9rem;
+        }
+
+        /* Progress Bar Styles */
+        .progress-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-header {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .progress-steps {
+            padding: 20px;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .progress-step.pending {
+            background: #f8f9fa;
+            border-left: 4px solid #ddd;
+        }
+
+        .progress-step.in-progress {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            animation: pulse-progress 2s infinite;
+        }
+
+        .progress-step.completed {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+
+        .progress-step.failed {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+
+        @keyframes pulse-progress {
+            0% { background: #fff3cd; }
+            50% { background: #ffeaa7; }
+            100% { background: #fff3cd; }
+        }
+
+        .step-icon {
+            font-size: 1.2rem;
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .step-message {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Upload Section Styles */
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Gap Analyst Agent</h1>
+            <div class="subtitle">CV-JD Gap Analysis with Color-Coded Highlighting & Comprehensive Scoring</div>
+        </div>
+
+        <div class="status-bar" id="statusBar">
+            <div class="status-item">
+                <span class="status-indicator status-online" id="gapAnalystStatus"></span>
+                <span>Gap Analyst</span>
+            </div>
+            <div class="status-item">
+                <span class="status-indicator status-offline" id="cvParserStatus"></span>
+                <span>CV Parser</span>
+            </div>
+            <div class="status-item">
+                <span class="status-indicator status-offline" id="jdParserStatus"></span>
+                <span>JD Parser</span>
+            </div>
+            <div class="status-item">
+                <span class="status-indicator status-offline" id="contentMatcherStatus"></span>
+                <span>Content Matcher</span>
+            </div>
+            <div class="status-item">
+                <span class="status-indicator status-offline" id="anthropicStatus"></span>
+                <span>Anthropic Claude</span>
+            </div>
+        </div>
+
+        <!-- Workflow Progress Bar -->
+        <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-header">
+                <h3>🔄 Processing Pipeline Status</h3>
+            </div>
+            <div class="progress-steps" id="progressSteps">
+                <!-- Progress steps will be populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Upload and Process Section -->
+        <div class="upload-section">
+            <div class="section-header">
+                🚀 Complete CV-JD Analysis Pipeline
+            </div>
+            <div class="upload-grid">
+                <!-- CV Upload -->
+                <div>
+                    <label class="prompt-label">📄 Upload CV File</label>
+                    <div class="file-upload">
+                        <input type="file" id="cvFileInput" accept=".pdf,.doc,.docx,.txt" onchange="handleCVUpload(event)">
+                        <label for="cvFileInput" class="upload-label">
+                            📎 Click to upload CV file (PDF, DOC, DOCX)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- JD Input -->
+                <div>
+                    <label class="prompt-label">📋 Job Description Input</label>
+                    <div class="input-section">
+                        <label style="font-size: 0.9rem; margin-bottom: 5px; display: block; color: #666;">Job Description URL</label>
+                        <input type="url" class="url-input" id="jdUrlInput" placeholder="https://example.com/job-posting">
+                    </div>
+                    <div class="input-section" style="margin-top: 15px;">
+                        <label style="font-size: 0.9rem; margin-bottom: 5px; display: block; color: #666;">Or paste job description text</label>
+                        <textarea class="textarea" id="jdTextInput" placeholder="Paste job description content here..." style="height: 100px;"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-content">
+                <div class="control-buttons">
+                    <button class="btn btn-secondary" onclick="processCompleteWorkflow()" id="processWorkflowBtn" disabled>
+                        <span>🔄 Start Complete Analysis Pipeline</span>
+                    </button>
+                    <button class="btn" onclick="testAnalysis()" id="testBtn">
+                        <span>🧪 Test with Sample Data</span>
+                    </button>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-box-title">Pipeline Overview</div>
+                    <div class="info-box-content">
+                        This workflow will: (1) Parse your CV using Claude Sonnet, (2) Parse the job description using Claude Haiku, 
+                        (3) Perform intelligent gap analysis with color-coded highlighting, and (4) Generate comprehensive scoring and recommendations.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-interface">
+            <!-- Alternative: Content Matcher Integration Section -->
+            <div class="section">
+                <div class="section-header">
+                    🔗 Alternative: Content Matcher Integration
+                </div>
+                <div class="section-content">
+                    <div class="info-box">
+                        <div class="info-box-title">Content Matcher Integration</div>
+                        <div class="info-box-content">
+                            Download processed CV and JD data from the Content Matcher Agent to perform gap analysis.
+                            Make sure the Content Matcher Agent is running and has processed both CV and JD data.
+                        </div>
+                    </div>
+                    
+                    <div class="control-buttons">
+                        <button class="btn" onclick="downloadFromMatcher()" id="downloadBtn">
+                            <span>📥 Download from Content Matcher</span>
+                        </button>
+                        <button class="btn" onclick="performAnalysis()" id="analyzeBtn" disabled>
+                            <span>🔍 Analyze CV-JD Gap</span>
+                        </button>
+                    </div>
+
+                    <div id="dataStatus" class="empty-state">
+                        No CV and JD data loaded. Use "Download from Content Matcher" or the main pipeline above.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prompt Engineering Section -->
+            <div class="section">
+                <div class="section-header">
+                    ⚙️ Prompt Engineering & Configuration
+                </div>
+                <div class="section-content">
+                    <div class="prompt-section">
+                        <label class="prompt-label">Gap Analysis Prompt Template</label>
+                        <textarea class="prompt-textarea" id="promptTextarea" placeholder="Loading current prompt..."></textarea>
+                    </div>
+                    
+                    <div class="control-buttons">
+                        <button class="btn" onclick="updatePrompt()" id="updatePromptBtn">
+                            <span>🔄 Update Prompt</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="saveAsDefault()" id="saveDefaultBtn">
+                            <span>💾 Save as Default</span>
+                        </button>
+                        <button class="btn" onclick="loadCurrentPrompt()" id="reloadPromptBtn">
+                            <span>↻ Reload Current</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gap Analysis Results Section -->
+        <div class="analysis-section" id="analysisSection" style="display: none;">
+            <!-- CV Analysis Panel -->
+            <div class="analysis-panel">
+                <div class="section-header cv-header">
+                    <span>📄 CV Analysis (Highlighted)</span>
+                </div>
+                <div class="analysis-content">
+                    <div class="empty-state" id="cvAnalysisEmpty">
+                        CV gap analysis will appear here after processing
+                    </div>
+                    <div id="cvAnalysisResults" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- JD Analysis Panel -->
+            <div class="analysis-panel">
+                <div class="section-header jd-header">
+                    <span>📋 JD Analysis (Highlighted)</span>
+                </div>
+                <div class="analysis-content">
+                    <div class="empty-state" id="jdAnalysisEmpty">
+                        JD gap analysis will appear here after processing
+                    </div>
+                    <div id="jdAnalysisResults" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scoring and Analysis Section -->
+        <div class="scoring-section" id="scoringSection" style="display: none;">
+            <div class="scoring-header">
+                📊 Comprehensive Scoring & Analysis
+            </div>
+            <div class="scoring-content">
+                <div class="score-grid" id="scoreGrid">
+                    <!-- Scores will be populated dynamically -->
+                </div>
+
+                <div class="recommendations">
+                    <div class="recommendation-title">💡 Recommendations</div>
+                    <ul class="recommendation-list" id="recommendationsList">
+                        <!-- Recommendations will be populated dynamically -->
+                    </ul>
+                </div>
+
+                <div class="strengths">
+                    <div class="recommendation-title">✅ Strengths</div>
+                    <ul class="recommendation-list" id="strengthsList">
+                        <!-- Strengths will be populated dynamically -->
+                    </ul>
+                </div>
+
+                <div class="gaps">
+                    <div class="recommendation-title">❌ Gaps to Address</div>
+                    <ul class="recommendation-list" id="gapsList">
+                        <!-- Gaps will be populated dynamically -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cvData = null;
+        let jdData = null;
+        let currentAnalysisResult = null;
+
+        // Check agent status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAgentStatus();
+            loadCurrentPrompt();
+            setInterval(checkAgentStatus, 30000); // Check every 30 seconds
+        });
+
+        async function checkAgentStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatusIndicator('gapAnalystStatus', true);
+                    updateStatusIndicator('cvParserStatus', data.agents.cv_parser);
+                    updateStatusIndicator('jdParserStatus', data.agents.jd_parser);
+                    updateStatusIndicator('contentMatcherStatus', data.agents.content_matcher);
+                    updateStatusIndicator('anthropicStatus', data.anthropic_configured);
+                }
+            } catch (error) {
+                console.error('Status check failed:', error);
+                updateStatusIndicator('gapAnalystStatus', false);
+            }
+        }
+
+        function updateStatusIndicator(elementId, isOnline) {
+            const element = document.getElementById(elementId);
+            element.className = `status-indicator ${isOnline ? 'status-online' : 'status-offline'}`;
+        }
+
+        async function loadCurrentPrompt() {
+            try {
+                const response = await fetch('/get_prompt');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('promptTextarea').value = data.prompt;
+                } else {
+                    displayError('promptTextarea', 'Failed to load current prompt: ' + data.error);
+                }
+            } catch (error) {
+                displayError('promptTextarea', 'Failed to load prompt: ' + error.message);
+            }
+        }
+
+        async function updatePrompt() {
+            const promptText = document.getElementById('promptTextarea').value.trim();
+            
+            if (!promptText) {
+                alert('Prompt cannot be empty');
+                return;
+            }
+
+            const btn = document.getElementById('updatePromptBtn');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span>⏳ Updating...</span>';
+                
+                const response = await fetch('/update_prompt', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({prompt: promptText})
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    btn.innerHTML = '<span>✅ Updated</span>';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                } else {
+                    alert('Failed to update prompt: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to update prompt: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            }
+        }
+
+        async function saveAsDefault() {
+            const promptText = document.getElementById('promptTextarea').value.trim();
+            
+            if (!promptText) {
+                alert('Prompt cannot be empty');
+                return;
+            }
+
+            const btn = document.getElementById('saveDefaultBtn');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span>⏳ Saving...</span>';
+                
+                const response = await fetch('/save_default_prompt', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({prompt: promptText})
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    btn.innerHTML = '<span>✅ Saved</span>';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                } else {
+                    alert('Failed to save prompt: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to save prompt: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            }
+        }
+
+        async function downloadFromMatcher() {
+            const btn = document.getElementById('downloadBtn');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span>⏳ Downloading...</span>';
+                
+                const response = await fetch('/download_from_matcher');
+                const data = await response.json();
+
+                if (data.success) {
+                    cvData = data.cv_data;
+                    jdData = data.jd_data;
+                    
+                    updateDataStatus('CV and JD data loaded successfully from Content Matcher');
+                    document.getElementById('analyzeBtn').disabled = false;
+                    
+                    btn.innerHTML = '<span>✅ Downloaded</span>';
+                } else {
+                    displayError('dataStatus', 'Failed to download from Content Matcher: ' + data.error);
+                }
+            } catch (error) {
+                displayError('dataStatus', 'Failed to download from Content Matcher: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 3000);
+            }
+        }
+
+        async function testAnalysis() {
+            const btn = document.getElementById('testBtn');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span>⏳ Loading Test Data...</span>';
+                
+                const response = await fetch('/test_analysis');
+                const data = await response.json();
+
+                if (data.success) {
+                    cvData = data.cv_data;
+                    jdData = data.jd_data;
+                    
+                    updateDataStatus('Sample CV and JD data loaded for testing');
+                    document.getElementById('analyzeBtn').disabled = false;
+                    
+                    btn.innerHTML = '<span>✅ Test Data Loaded</span>';
+                } else {
+                    displayError('dataStatus', 'Failed to load test data: ' + data.error);
+                }
+            } catch (error) {
+                displayError('dataStatus', 'Failed to load test data: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 3000);
+            }
+        }
+
+        async function performAnalysis() {
+            if (!cvData || !jdData) {
+                alert('Please load CV and JD data first');
+                return;
+            }
+
+            const btn = document.getElementById('analyzeBtn');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span>⏳ Analyzing...</span>';
+                
+                // Show analysis sections
+                document.getElementById('analysisSection').style.display = 'grid';
+                document.getElementById('scoringSection').style.display = 'block';
+                
+                // Show loading
+                showLoading('cvAnalysisResults', 'cvAnalysisEmpty');
+                showLoading('jdAnalysisResults', 'jdAnalysisEmpty');
+                
+                const response = await fetch('/analyze_gap', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        cv_data: cvData,
+                        jd_data: jdData
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentAnalysisResult = data.result;
+                    displayAnalysisResults(data.result);
+                    btn.innerHTML = '<span>✅ Analysis Complete</span>';
+                } else {
+                    displayError('cvAnalysisResults', 'Analysis failed: ' + data.error);
+                    displayError('jdAnalysisResults', 'Analysis failed: ' + data.error);
+                }
+            } catch (error) {
+                displayError('cvAnalysisResults', 'Analysis failed: ' + error.message);
+                displayError('jdAnalysisResults', 'Analysis failed: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 3000);
+            }
+        }
+
+        function displayAnalysisResults(result) {
+            // Display CV analysis with highlighting
+            displayCVAnalysis(result.cv_highlighted);
+            
+            // Display JD analysis with highlighting
+            displayJDAnalysis(result.jd_highlighted);
+            
+            // Display scoring and recommendations
+            displayScoring(result.match_score);
+        }
+
+        function displayCVAnalysis(cvHighlighted) {
+            const resultsDiv = document.getElementById('cvAnalysisResults');
+            document.getElementById('cvAnalysisEmpty').style.display = 'none';
+            resultsDiv.style.display = 'block';
+            
+            let html = '<div class="cv-display">';
+            
+            // Personal Information
+            if (cvHighlighted.full_name) {
+                html += `
+                    <div class="cv-section">
+                        <div class="section-title">👤 Personal Information</div>
+                        <strong>${applyHighlighting(cvHighlighted.full_name)}</strong><br>
+                        📧 Email: ${applyHighlighting(cvHighlighted.email || 'N/A')}<br>
+                        📞 Phone: ${applyHighlighting(cvHighlighted.phone || 'N/A')}<br>
+                        📍 Location: ${applyHighlighting(cvHighlighted.location || 'N/A')}
+                    </div>
+                `;
+            }
+            
+            // Skills
+            if (cvHighlighted.key_skills && cvHighlighted.key_skills.length > 0) {
+                html += `
+                    <div class="cv-section">
+                        <div class="section-title">🛠️ Key Skills</div>
+                        ${cvHighlighted.key_skills.map(skill => 
+                            `<span class="skill-tag">${applyHighlighting(skill)}</span>`
+                        ).join('')}
+                    </div>
+                `;
+            }
+            
+            // Work Experience
+            if (cvHighlighted.work_experience && cvHighlighted.work_experience.length > 0) {
+                html += `
+                    <div class="cv-section">
+                        <div class="section-title">💼 Work Experience</div>
+                        ${cvHighlighted.work_experience.map(work => `
+                            <div class="work-item">
+                                <div class="work-title">${applyHighlighting(work.position || 'N/A')}</div>
+                                <div class="work-company">${applyHighlighting(work.company || 'N/A')} • ${applyHighlighting(work.duration || 'N/A')}</div>
+                                ${work.responsibilities ? work.responsibilities.map(resp => 
+                                    `<p>• ${applyHighlighting(resp)}</p>`
+                                ).join('') : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            // Education
+            if (cvHighlighted.education && cvHighlighted.education.length > 0) {
+                html += `
+                    <div class="cv-section">
+                        <div class="section-title">🎓 Education</div>
+                        ${cvHighlighted.education.map(edu => `
+                            <div class="work-item">
+                                <div class="work-title">${applyHighlighting(edu.degree || 'N/A')} ${edu.field ? 'in ' + applyHighlighting(edu.field) : ''}</div>
+                                <div class="work-company">${applyHighlighting(edu.institution || 'N/A')} • ${applyHighlighting(edu.graduation || 'N/A')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+
+        function displayJDAnalysis(jdHighlighted) {
+            const resultsDiv = document.getElementById('jdAnalysisResults');
+            document.getElementById('jdAnalysisEmpty').style.display = 'none';
+            resultsDiv.style.display = 'block';
+            
+            let html = '<div class="jd-display">';
+            
+            // Job Information
+            if (jdHighlighted.job_title) {
+                html += `
+                    <div class="jd-section">
+                        <div class="section-title">📋 Job Information</div>
+                        <strong>${applyHighlighting(jdHighlighted.job_title)}</strong><br>
+                        🏢 Company: ${applyHighlighting(jdHighlighted.company_name || 'N/A')}<br>
+                        📍 Location: ${applyHighlighting(jdHighlighted.location || 'N/A')}
+                    </div>
+                `;
+            }
+            
+            // Required Skills
+            if (jdHighlighted.required_skills && jdHighlighted.required_skills.length > 0) {
+                html += `
+                    <div class="jd-section">
+                        <div class="section-title">✅ Required Skills</div>
+                        ${jdHighlighted.required_skills.map(skill => 
+                            `<span class="requirement-tag">${applyHighlighting(skill)}</span>`
+                        ).join('')}
+                    </div>
+                `;
+            }
+            
+            // Preferred Skills
+            if (jdHighlighted.preferred_skills && jdHighlighted.preferred_skills.length > 0) {
+                html += `
+                    <div class="jd-section">
+                        <div class="section-title">⭐ Preferred Skills</div>
+                        ${jdHighlighted.preferred_skills.map(skill => 
+                            `<span class="requirement-tag">${applyHighlighting(skill)}</span>`
+                        ).join('')}
+                    </div>
+                `;
+            }
+            
+            // Required Experience
+            if (jdHighlighted.required_experience && jdHighlighted.required_experience.length > 0) {
+                html += `
+                    <div class="jd-section">
+                        <div class="section-title">💼 Required Experience</div>
+                        ${jdHighlighted.required_experience.map(exp => `
+                            <div class="requirement-item">
+                                <div class="requirement-title">• ${applyHighlighting(exp)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            // Required Education
+            if (jdHighlighted.required_education && jdHighlighted.required_education.length > 0) {
+                html += `
+                    <div class="jd-section">
+                        <div class="section-title">🎓 Required Education</div>
+                        ${jdHighlighted.required_education.map(edu => `
+                            <div class="requirement-item">
+                                <div class="requirement-title">• ${applyHighlighting(edu)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+
+        function applyHighlighting(text) {
+            if (typeof text === 'object' && text !== null) {
+                if (text.highlight) {
+                    const highlightClass = `highlight-${text.highlight}`;
+                    return `<span class="${highlightClass}">${text.content || text}</span>`;
+                }
+                return text.content || JSON.stringify(text);
+            }
+            return text || '';
+        }
+
+        function displayScoring(matchScore) {
+            // Display score grid
+            const scoreGrid = document.getElementById('scoreGrid');
+            scoreGrid.innerHTML = `
+                <div class="score-item">
+                    <div class="score-value">${matchScore.overall_score.toFixed(1)}%</div>
+                    <div class="score-label">Overall Match</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">${matchScore.skills_score.toFixed(1)}%</div>
+                    <div class="score-label">Skills Match</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">${matchScore.experience_score.toFixed(1)}%</div>
+                    <div class="score-label">Experience Match</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">${matchScore.education_score.toFixed(1)}%</div>
+                    <div class="score-label">Education Match</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">${matchScore.qualifications_score.toFixed(1)}%</div>
+                    <div class="score-label">Qualifications</div>
+                </div>
+            `;
+            
+            // Display recommendations
+            const recommendationsList = document.getElementById('recommendationsList');
+            recommendationsList.innerHTML = matchScore.recommendations.map(rec => 
+                `<li class="recommendation-item">${rec}</li>`
+            ).join('');
+            
+            // Display strengths
+            const strengthsList = document.getElementById('strengthsList');
+            strengthsList.innerHTML = matchScore.strengths.map(strength => 
+                `<li class="recommendation-item">${strength}</li>`
+            ).join('');
+            
+            // Display gaps
+            const gapsList = document.getElementById('gapsList');
+            gapsList.innerHTML = matchScore.gaps.map(gap => 
+                `<li class="recommendation-item">${gap}</li>`
+            ).join('');
+        }
+
+        function updateDataStatus(message) {
+            const statusDiv = document.getElementById('dataStatus');
+            statusDiv.className = 'info-box';
+            statusDiv.innerHTML = `
+                <div class="info-box-title">Data Status</div>
+                <div class="info-box-content">${message}</div>
+            `;
+        }
+
+        function showLoading(resultId, emptyStateId) {
+            document.getElementById(emptyStateId).style.display = 'none';
+            document.getElementById(resultId).style.display = 'block';
+            document.getElementById(resultId).innerHTML = '<div class="loading">Processing gap analysis...</div>';
+        }
+
+        function displayError(elementId, error) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = `<div class="error-message">❌ ${error}</div>`;
+                element.style.display = 'block';
+            }
+        }
+
+        // New workflow functions
+        function handleCVUpload(event) {
+            const file = event.target.files[0];
+            const processBtn = document.getElementById('processWorkflowBtn');
+            
+            if (file) {
+                const uploadLabel = document.querySelector('.upload-label');
+                uploadLabel.textContent = `📎 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                
+                // Check if we can enable the process button
+                checkWorkflowInputs();
+            } else {
+                processBtn.disabled = true;
+            }
+        }
+
+        function checkWorkflowInputs() {
+            const file = document.getElementById('cvFileInput').files[0];
+            const jdUrl = document.getElementById('jdUrlInput').value.trim();
+            const jdText = document.getElementById('jdTextInput').value.trim();
+            const processBtn = document.getElementById('processWorkflowBtn');
+            
+            if (file && (jdUrl || jdText)) {
+                processBtn.disabled = false;
+            } else {
+                processBtn.disabled = true;
+            }
+        }
+
+        async function processCompleteWorkflow() {
+            const file = document.getElementById('cvFileInput').files[0];
+            const jdUrl = document.getElementById('jdUrlInput').value.trim();
+            const jdText = document.getElementById('jdTextInput').value.trim();
+            
+            if (!file) {
+                alert('Please upload a CV file');
+                return;
+            }
+            
+            if (!jdUrl && !jdText) {
+                alert('Please provide a job description URL or text');
+                return;
+            }
+
+            const btn = document.getElementById('processWorkflowBtn');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span>⏳ Processing Pipeline...</span>';
+                
+                // Show progress container
+                document.getElementById('progressContainer').style.display = 'block';
+                
+                // Initialize progress
+                updateProgress([
+                    {step: 'cv_upload', status: 'completed', message: 'CV file received'},
+                    {step: 'jd_input', status: 'completed', message: 'Job description received'},
+                    {step: 'cv_parsing', status: 'in_progress', message: 'Parsing CV with Claude Sonnet...'},
+                    {step: 'jd_parsing', status: 'pending', message: 'Waiting for CV parsing'},
+                    {step: 'gap_analysis', status: 'pending', message: 'Ready for gap analysis'},
+                    {step: 'complete', status: 'pending', message: 'Workflow pending'}
+                ]);
+                
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('cv_file', file);
+                if (jdUrl) {
+                    formData.append('jd_url', jdUrl);
+                } else {
+                    formData.append('jd_text', jdText);
+                }
+                
+                const response = await fetch('/process_cv_and_jd', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update progress with actual steps
+                    updateProgress(data.workflow_steps);
+                    
+                    // Display results
+                    currentAnalysisResult = data.gap_analysis;
+                    cvData = data.cv_data;
+                    jdData = data.jd_data;
+                    
+                    displayAnalysisResults(data.gap_analysis);
+                    
+                    btn.innerHTML = '<span>✅ Pipeline Complete</span>';
+                } else {
+                    updateProgress(data.workflow_steps || [
+                        {step: 'error', status: 'failed', message: data.error}
+                    ]);
+                    displayError('progressSteps', data.error);
+                }
+            } catch (error) {
+                updateProgress([
+                    {step: 'error', status: 'failed', message: `Network error: ${error.message}`}
+                ]);
+                displayError('progressSteps', error.message);
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 3000);
+            }
+        }
+
+        function updateProgress(steps) {
+            const progressSteps = document.getElementById('progressSteps');
+            
+            const stepIcons = {
+                'cv_upload': '📤',
+                'jd_input': '📋',
+                'cv_parsing': '🤖',
+                'jd_parsing': '🤖',
+                'gap_analysis': '🔍',
+                'complete': '✅',
+                'error': '❌'
+            };
+            
+            const stepTitles = {
+                'cv_upload': 'CV Upload',
+                'jd_input': 'JD Input',
+                'cv_parsing': 'CV Parsing',
+                'jd_parsing': 'JD Parsing',
+                'gap_analysis': 'Gap Analysis',
+                'complete': 'Complete',
+                'error': 'Error'
+            };
+            
+            let html = '';
+            steps.forEach(step => {
+                const icon = stepIcons[step.step] || '📋';
+                const title = stepTitles[step.step] || step.step;
+                
+                html += `
+                    <div class="progress-step ${step.status}">
+                        <div class="step-icon">${icon}</div>
+                        <div class="step-content">
+                            <div class="step-title">${title}</div>
+                            <div class="step-message">${step.message}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            progressSteps.innerHTML = html;
+        }
+
+        // Add event listeners when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const jdUrlInput = document.getElementById('jdUrlInput');
+            const jdTextInput = document.getElementById('jdTextInput');
+            
+            if (jdUrlInput) jdUrlInput.addEventListener('input', checkWorkflowInputs);
+            if (jdTextInput) jdTextInput.addEventListener('input', checkWorkflowInputs);
+        });
+    </script>
+</body>
+</html>

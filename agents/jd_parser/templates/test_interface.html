@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JD Parser Agent v2.0 - Prompt Engineering Lab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 30px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: visible;
+        }
+
+        .top-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            border-bottom: 2px solid #e9ecef;
+            background: #f8f9fa;
+        }
+
+        .input-panel, .prompt-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .panel-header {
+            font-weight: 600;
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .input-group input[type="url"],
+        .input-group input[type="file"] {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .content-textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .prompt-textarea {
+            width: 100%;
+            height: 180px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            resize: vertical;
+            background: #f8f9fa;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .prompt-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .prompt-selector {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .comparison-toggle {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .toggle-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-input {
+            width: 50px;
+            height: 25px;
+            background: #ccc;
+            border-radius: 25px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-input.active {
+            background: #28a745;
+        }
+
+        .toggle-input::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-input.active::before {
+            transform: translateX(25px);
+        }
+
+        .results-section {
+            flex: 1;
+            overflow: visible;
+            min-height: 400px;
+        }
+
+        .single-result {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 400px;
+        }
+
+        .comparison-result {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            min-height: 400px;
+        }
+
+        .result-panel {
+            display: flex;
+            flex-direction: column;
+            overflow: visible;
+            border-right: 2px solid #e9ecef;
+        }
+
+        .result-panel:last-child {
+            border-right: none;
+        }
+
+        .result-header {
+            background: #495057;
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .result-content {
+            flex: 1;
+            overflow: auto;
+            padding: 0;
+        }
+
+        .json-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            margin: 0;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .structured-content {
+            padding: 15px;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .info-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-card h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .basic-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .info-item strong {
+            display: block;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #6c757d;
+            margin-bottom: 3px;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .skill-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .skill-tag.preferred {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .list-content ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .list-content li {
+            background: #f8f9fa;
+            margin: 3px 0;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            border-left: 3px solid #667eea;
+        }
+
+        .confidence-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .confidence-bar {
+            flex: 1;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%);
+            transition: width 0.5s ease;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6c757d;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .loading::before {
+            content: '⏳';
+            font-size: 1.5rem;
+            margin-right: 10px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-state {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .sample-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .sample-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .sample-btn:hover {
+            background: #5a6268;
+        }
+
+        .saved-prompts {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .saved-prompt-item {
+            padding: 5px 10px;
+            margin: 2px 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .saved-prompt-item:hover {
+            background: #e9ecef;
+        }
+
+        .delete-prompt {
+            color: #dc3545;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        @media (max-width: 1400px) {
+            .top-section {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .comparison-result {
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .single-result,
+            .comparison-result {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(auto, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 JD Parser Agent - Prompt Engineering Lab</h1>
+            <p>Test, Compare & Optimize LLM Prompts for Job Description Analysis</p>
+        </div>
+
+        <div class="main-content">
+            <div class="top-section">
+                <div class="input-panel">
+                    <div class="panel-header">📄 Job Description Input</div>
+                    
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="jd-url">🔗 URL</label>
+                            <input type="url" id="jd-url" placeholder="https://job-posting-url">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="jd-file">📁 File</label>
+                            <input type="file" id="jd-file" accept=".txt,.pdf,.doc,.docx">
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="processJobDescription()" id="process-btn">
+                            🚀 Process JD
+                        </button>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="jd-content">Job Description Content</label>
+                        <textarea id="jd-content" class="content-textarea" 
+                                  placeholder="Paste job description here..."></textarea>
+                    </div>
+
+                    <div class="sample-buttons">
+                        <button class="sample-btn" onclick="loadSample('tech_senior')">Tech Senior</button>
+                        <button class="sample-btn" onclick="loadSample('finance_analyst')">Finance</button>
+                        <button class="sample-btn" onclick="loadSample('marketing_manager')">Marketing</button>
+                        <button class="sample-btn" onclick="clearInput()">Clear</button>
+                    </div>
+                </div>
+
+                <div class="prompt-panel">
+                    <div class="panel-header">⚡ Prompt Engineering</div>
+                    
+                    <div class="prompt-controls">
+                        <select class="prompt-selector" id="prompt-selector" onchange="loadSelectedPrompt()">
+                            <option value="default">Default Parsing Prompt</option>
+                        </select>
+                        <button class="btn btn-info" onclick="loadCurrentPrompt()" title="Refresh default prompt">🔄 Load</button>
+                        <button class="btn btn-secondary" onclick="saveCurrentPrompt()">💾 Save</button>
+                        <button class="btn btn-info" onclick="duplicatePrompt()">📋 Duplicate</button>
+                        <button class="btn btn-warning" onclick="setAsDefaultPrompt()">⭐ Set as Default</button>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="prompt-editor">Current Prompt</label>
+                        <textarea id="prompt-editor" class="prompt-textarea" 
+                                  placeholder="Loading prompt..."></textarea>
+                    </div>
+
+                    <div class="control-buttons">
+                        <button class="btn btn-primary" onclick="testSinglePrompt()" id="test-btn">
+                            🚀 Test Prompt
+                        </button>
+                        <button class="btn btn-warning" onclick="updateDefaultPrompt()">
+                            💫 Update Default
+                        </button>
+                    </div>
+
+                    <div class="saved-prompts" id="saved-prompts">
+                        <div style="text-align: center; color: #6c757d; font-size: 12px;">
+                            Saved prompts will appear here
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-toggle">
+                <div class="toggle-switch">
+                    <span>Single Test</span>
+                    <div class="toggle-input" id="comparison-toggle" onclick="toggleComparisonMode()"></div>
+                    <span>Prompt Comparison</span>
+                </div>
+            </div>
+
+            <div class="results-section" id="results-section">
+                <div class="single-result" id="single-result">
+                    <div class="result-panel">
+                        <div class="result-header">📋 Raw JSON Output</div>
+                        <div class="result-content">
+                            <pre id="json-output" class="json-output">Test a prompt to see JSON results...</pre>
+                        </div>
+                    </div>
+                    <div class="result-panel">
+                        <div class="result-header">✨ Structured Content</div>
+                        <div class="result-content">
+                            <div id="structured-output" class="structured-content">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">🧪</div>
+                                    <h3>Ready for Prompt Testing</h3>
+                                    <p>Load a prompt, enter a job description, and test your LLM prompting strategies!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-result" id="comparison-result" style="display: none;">
+                    <div class="result-panel">
+                        <div class="result-header">📋 Prompt A - JSON</div>
+                        <div class="result-content">
+                            <pre id="json-output-a" class="json-output">Select prompts to compare...</pre>
+                        </div>
+                    </div>
+                    <div class="result-panel">
+                        <div class="result-header">✨ Prompt A - Structured</div>
+                        <div class="result-content">
+                            <div id="structured-output-a" class="structured-content">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">🅰️</div>
+                                    <h4>Prompt A Results</h4>
+                                    <p>Run comparison to see results</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="result-panel">
+                        <div class="result-header">📋 Prompt B - JSON</div>
+                        <div class="result-content">
+                            <pre id="json-output-b" class="json-output">Select prompts to compare...</pre>
+                        </div>
+                    </div>
+                    <div class="result-panel">
+                        <div class="result-header">✨ Prompt B - Structured</div>
+                        <div class="result-content">
+                            <div id="structured-output-b" class="structured-content">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">🅱️</div>
+                                    <h4>Prompt B Results</h4>
+                                    <p>Run comparison to see results</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample job descriptions
+        const sampleJDs = {{ sample_jds | tojson }};
+        
+        // State management
+        let isComparisonMode = false;
+        let savedPrompts = JSON.parse(localStorage.getItem('jd_saved_prompts') || '{}');
+        let currentPromptId = 'default';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentPrompt();
+            updatePromptSelector();
+            updateSavedPromptsDisplay();
+        });
+
+        // Sample data loading
+        function loadSample(sampleKey) {
+            const textarea = document.getElementById('jd-content');
+            if (sampleJDs[sampleKey]) {
+                textarea.value = sampleJDs[sampleKey];
+            }
+        }
+
+        function clearInput() {
+            document.getElementById('jd-url').value = '';
+            document.getElementById('jd-file').value = '';
+            document.getElementById('jd-content').value = '';
+        }
+
+        // Prompt management
+        async function loadCurrentPrompt() {
+            try {
+                const response = await fetch('/get_current_prompt');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('prompt-editor').value = data.prompt;
+                } else {
+                    console.error('Failed to load prompt:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading prompt:', error);
+            }
+        }
+
+        function loadSelectedPrompt() {
+            const selector = document.getElementById('prompt-selector');
+            const selectedId = selector.value;
+            
+            if (selectedId === 'default') {
+                loadCurrentPrompt();
+            } else if (savedPrompts[selectedId]) {
+                document.getElementById('prompt-editor').value = savedPrompts[selectedId].prompt;
+                currentPromptId = selectedId;
+            }
+        }
+
+        function saveCurrentPrompt() {
+            const promptText = document.getElementById('prompt-editor').value.trim();
+            if (!promptText) {
+                alert('Please enter a prompt first!');
+                return;
+            }
+
+            const promptName = prompt('Enter a name for this prompt:');
+            if (!promptName) return;
+
+            const promptId = 'prompt_' + Date.now();
+            savedPrompts[promptId] = {
+                name: promptName,
+                prompt: promptText,
+                created: new Date().toISOString()
+            };
+
+            localStorage.setItem('jd_saved_prompts', JSON.stringify(savedPrompts));
+            updatePromptSelector();
+            updateSavedPromptsDisplay();
+            
+            // Select the newly saved prompt
+            document.getElementById('prompt-selector').value = promptId;
+            currentPromptId = promptId;
+        }
+
+        function duplicatePrompt() {
+            const currentPrompt = document.getElementById('prompt-editor').value.trim();
+            if (!currentPrompt) {
+                alert('No prompt to duplicate!');
+                return;
+            }
+
+            const newName = prompt('Enter a name for the duplicated prompt:');
+            if (!newName) return;
+
+            const promptId = 'prompt_' + Date.now();
+            savedPrompts[promptId] = {
+                name: newName,
+                prompt: currentPrompt,
+                created: new Date().toISOString()
+            };
+
+            localStorage.setItem('jd_saved_prompts', JSON.stringify(savedPrompts));
+            updatePromptSelector();
+            updateSavedPromptsDisplay();
+            
+            document.getElementById('prompt-selector').value = promptId;
+            currentPromptId = promptId;
+        }
+
+        function deletePrompt(promptId) {
+            if (confirm('Are you sure you want to delete this prompt?')) {
+                delete savedPrompts[promptId];
+                localStorage.setItem('jd_saved_prompts', JSON.stringify(savedPrompts));
+                updatePromptSelector();
+                updateSavedPromptsDisplay();
+                
+                // Reset to default if current prompt was deleted
+                if (currentPromptId === promptId) {
+                    document.getElementById('prompt-selector').value = 'default';
+                    loadCurrentPrompt();
+                    currentPromptId = 'default';
+                }
+            }
+        }
+
+        async function updateDefaultPrompt() {
+            const promptText = document.getElementById('prompt-editor').value.trim();
+            if (!promptText) {
+                alert('Please enter a prompt first!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/update_prompt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: promptText })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Default prompt updated successfully!');
+                } else {
+                    alert('❌ Failed to update prompt: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Network error: ' + error.message);
+            }
+        }
+
+        async function setAsDefaultPrompt() {
+            const promptText = document.getElementById('prompt-editor').value.trim();
+            if (!promptText) {
+                alert('Please enter a prompt first!');
+                return;
+            }
+
+            // Confirm with user
+            if (!confirm('This will permanently save this prompt as the new default. Are you sure?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/set_default_prompt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: promptText })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('⭐ Prompt saved as new default successfully!');
+                    // Update the prompt selector to reflect the new default
+                    loadCurrentPrompt();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error setting default prompt:', error);
+                alert('❌ Network error occurred');
+            }
+        }
+
+        function updatePromptSelector() {
+            const selector = document.getElementById('prompt-selector');
+            
+            // Clear existing options except default
+            while (selector.children.length > 1) {
+                selector.removeChild(selector.lastChild);
+            }
+
+            // Add saved prompts
+            Object.entries(savedPrompts).forEach(([id, prompt]) => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = prompt.name;
+                selector.appendChild(option);
+            });
+        }
+
+        function updateSavedPromptsDisplay() {
+            const container = document.getElementById('saved-prompts');
+            
+            if (Object.keys(savedPrompts).length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: #6c757d; font-size: 12px;">
+                        Saved prompts will appear here
+                    </div>
+                `;
+                return;
+            }
+
+            const html = Object.entries(savedPrompts).map(([id, prompt]) => `
+                <div class="saved-prompt-item" onclick="selectPrompt('${id}')">
+                    <span>${prompt.name}</span>
+                    <span class="delete-prompt" onclick="event.stopPropagation(); deletePrompt('${id}')">×</span>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function selectPrompt(promptId) {
+            document.getElementById('prompt-selector').value = promptId;
+            loadSelectedPrompt();
+        }
+
+        // Comparison mode toggle
+        function toggleComparisonMode() {
+            const toggle = document.getElementById('comparison-toggle');
+            const singleResult = document.getElementById('single-result');
+            const comparisonResult = document.getElementById('comparison-result');
+            
+            isComparisonMode = !isComparisonMode;
+            toggle.classList.toggle('active', isComparisonMode);
+            
+            if (isComparisonMode) {
+                singleResult.style.display = 'none';
+                comparisonResult.style.display = 'grid';
+                showComparisonControls();
+            } else {
+                singleResult.style.display = 'grid';
+                comparisonResult.style.display = 'none';
+                hideComparisonControls();
+            }
+        }
+
+        function showComparisonControls() {
+            // Add comparison controls to prompt panel
+            const promptPanel = document.querySelector('.prompt-panel .control-buttons');
+            if (!document.getElementById('comparison-controls')) {
+                const comparisonDiv = document.createElement('div');
+                comparisonDiv.id = 'comparison-controls';
+                comparisonDiv.innerHTML = `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #dee2e6;">
+                        <h5 style="margin-bottom: 10px;">Prompt Comparison</h5>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;">
+                            <div>
+                                <label style="font-size: 12px; margin-bottom: 5px; display: block;">Prompt A</label>
+                                <select id="prompt-a-selector" class="prompt-selector">
+                                    <option value="default">Default Parsing Prompt</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 12px; margin-bottom: 5px; display: block;">Prompt B</label>
+                                <select id="prompt-b-selector" class="prompt-selector">
+                                    <option value="default">Default Parsing Prompt</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="runComparison()">⚡ Compare</button>
+                        </div>
+                    </div>
+                `;
+                promptPanel.parentNode.appendChild(comparisonDiv);
+                
+                // Populate comparison selectors
+                updateComparisonSelectors();
+            }
+        }
+
+        function hideComparisonControls() {
+            const controls = document.getElementById('comparison-controls');
+            if (controls) {
+                controls.remove();
+            }
+        }
+
+        function updateComparisonSelectors() {
+            const selectorA = document.getElementById('prompt-a-selector');
+            const selectorB = document.getElementById('prompt-b-selector');
+            
+            if (!selectorA || !selectorB) return;
+            
+            [selectorA, selectorB].forEach(selector => {
+                // Clear existing options except default
+                while (selector.children.length > 1) {
+                    selector.removeChild(selector.lastChild);
+                }
+
+                // Add saved prompts
+                Object.entries(savedPrompts).forEach(([id, prompt]) => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = prompt.name;
+                    selector.appendChild(option);
+                });
+            });
+        }
+
+        // Main processing function
+        async function processJobDescription() {
+            if (isComparisonMode) {
+                runComparison();
+            } else {
+                testSinglePrompt();
+            }
+        }
+
+        // Testing functions
+        async function testSinglePrompt() {
+            const content = await getJobDescriptionContent();
+            if (!content.text && !content.url) {
+                alert('Please provide a job description (text, file, or URL)');
+                return;
+            }
+
+            const promptText = document.getElementById('prompt-editor').value.trim();
+            if (!promptText) {
+                alert('Please enter a prompt first!');
+                return;
+            }
+
+            showSingleLoading();
+
+            try {
+                const requestData = {
+                    prompt: promptText,
+                    ...(content.url ? { jd_url: content.url } : { jd_text: content.text })
+                };
+
+                const response = await fetch('/parse_with_prompt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displaySingleResults(data.result, data.prompt_used);
+                } else {
+                    displaySingleError(data.error);
+                }
+
+            } catch (error) {
+                displaySingleError('Network error: ' + error.message);
+            }
+        }
+
+        async function runComparison() {
+            const content = await getJobDescriptionContent();
+            if (!content.text && !content.url) {
+                alert('Please provide a job description (text, file, or URL)');
+                return;
+            }
+
+            const promptAId = document.getElementById('prompt-a-selector').value;
+            const promptBId = document.getElementById('prompt-b-selector').value;
+            
+            const promptA = getPromptById(promptAId);
+            const promptB = getPromptById(promptBId);
+
+            if (!promptA || !promptB) {
+                alert('Please select valid prompts for comparison');
+                return;
+            }
+
+            showComparisonLoading();
+
+            try {
+                const baseRequest = content.url ? { jd_url: content.url } : { jd_text: content.text };
+                
+                // Run both prompts in parallel
+                const [responseA, responseB] = await Promise.all([
+                    fetch('/parse_with_prompt', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...baseRequest, prompt: promptA })
+                    }),
+                    fetch('/parse_with_prompt', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...baseRequest, prompt: promptB })
+                    })
+                ]);
+
+                const dataA = await responseA.json();
+                const dataB = await responseB.json();
+
+                displayComparisonResults(
+                    dataA.success ? dataA.result : null,
+                    dataB.success ? dataB.result : null,
+                    dataA.error,
+                    dataB.error,
+                    promptAId,
+                    promptBId
+                );
+
+            } catch (error) {
+                displayComparisonError('Network error: ' + error.message);
+            }
+        }
+
+        // Helper functions
+        async function getJobDescriptionContent() {
+            const url = document.getElementById('jd-url').value.trim();
+            const text = document.getElementById('jd-content').value.trim();
+            const file = document.getElementById('jd-file').files[0];
+
+            if (url) return { url };
+            if (file) {
+                try {
+                    const fileContent = await readFile(file);
+                    return { text: fileContent };
+                } catch (error) {
+                    console.error('File reading error:', error);
+                    return { text: text }; // Fall back to textarea content
+                }
+            }
+            if (text) return { text };
+            
+            return {};
+        }
+
+        function readFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+
+        async function getPromptById(promptId) {
+            if (promptId === 'default') {
+                try {
+                    const response = await fetch('/get_current_prompt');
+                    const data = await response.json();
+                    return data.success ? data.prompt : null;
+                } catch {
+                    return null;
+                }
+            } else if (savedPrompts[promptId]) {
+                return savedPrompts[promptId].prompt;
+            }
+            return null;
+        }
+
+        // Display functions
+        function showSingleLoading() {
+            document.getElementById('json-output').innerHTML = '<div class="loading">Analyzing with LLM...</div>';
+            document.getElementById('structured-output').innerHTML = '<div class="loading">Processing job description...</div>';
+        }
+
+        function showComparisonLoading() {
+            ['a', 'b'].forEach(suffix => {
+                document.getElementById(`json-output-${suffix}`).innerHTML = '<div class="loading">Analyzing...</div>';
+                document.getElementById(`structured-output-${suffix}`).innerHTML = '<div class="loading">Processing...</div>';
+            });
+        }
+
+        function displaySingleResults(result, promptUsed) {
+            // Display JSON
+            document.getElementById('json-output').textContent = JSON.stringify(result, null, 2);
+            
+            // Display structured content
+            displayStructuredContent(result, 'structured-output');
+        }
+
+        function displaySingleError(error) {
+            let errorTitle = "❌ Processing Error";
+            let instructions = "";
+            
+            // Detect URL access issues and provide specific guidance
+            if (error.includes("403 Forbidden") || error.includes("blocking automated requests")) {
+                errorTitle = "🚫 Website Access Blocked";
+                instructions = `
+                    <div class="alert alert-info" style="margin-top: 15px; padding: 15px; background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 5px;">
+                        <h5>📋 How to proceed:</h5>
+                        <ol style="margin: 10px 0; padding-left: 20px;">
+                            <li>Open the job posting URL in your browser</li>
+                            <li>Copy the entire job description text</li>
+                            <li>Paste it into the <strong>Job Description Text</strong> field above</li>
+                            <li>Click <strong>🚀 Process JD</strong> to analyze the content</li>
+                        </ol>
+                        <p style="margin-top: 10px;"><strong>Note:</strong> The parsing will work exactly the same way with pasted content!</p>
+                    </div>
+                `;
+            } else if (error.includes("404")) {
+                errorTitle = "🔍 Job Posting Not Found";
+                instructions = `
+                    <div class="alert alert-warning" style="margin-top: 15px; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px;">
+                        <p><strong>The job posting may have been removed or the URL is incorrect.</strong></p>
+                        <p>Try copying the job description content directly instead.</p>
+                    </div>
+                `;
+            }
+            
+            const errorHtml = `
+                <div class="error-state">
+                    <h4>${errorTitle}</h4>
+                    <p>${error}</p>
+                    ${instructions}
+                </div>
+            `;
+            
+            document.getElementById('json-output').innerHTML = `{
+  "error": "${error.replace(/"/g, '\\"')}",
+  "timestamp": "${new Date().toISOString()}"
+}`;
+            document.getElementById('structured-output').innerHTML = errorHtml;
+        }
+
+        function displayComparisonResults(resultA, resultB, errorA, errorB, promptAId, promptBId) {
+            // Display results for A
+            if (resultA && !errorA) {
+                document.getElementById('json-output-a').textContent = JSON.stringify(resultA, null, 2);
+                displayStructuredContent(resultA, 'structured-output-a');
+            } else {
+                displayComparisonError(errorA || 'Unknown error', 'a');
+            }
+            
+            // Display results for B
+            if (resultB && !errorB) {
+                document.getElementById('json-output-b').textContent = JSON.stringify(resultB, null, 2);
+                displayStructuredContent(resultB, 'structured-output-b');
+            } else {
+                displayComparisonError(errorB || 'Unknown error', 'b');
+            }
+            
+            // Update headers with prompt names
+            const promptAName = promptAId === 'default' ? 'Default' : savedPrompts[promptAId]?.name || 'Unknown';
+            const promptBName = promptBId === 'default' ? 'Default' : savedPrompts[promptBId]?.name || 'Unknown';
+            
+            document.querySelector('#comparison-result .result-panel:nth-child(1) .result-header').textContent = `📋 ${promptAName} - JSON`;
+            document.querySelector('#comparison-result .result-panel:nth-child(2) .result-header').textContent = `✨ ${promptAName} - Structured`;
+            document.querySelector('#comparison-result .result-panel:nth-child(3) .result-header').textContent = `📋 ${promptBName} - JSON`;
+            document.querySelector('#comparison-result .result-panel:nth-child(4) .result-header').textContent = `✨ ${promptBName} - Structured`;
+        }
+
+        function displayComparisonError(error, suffix = '') {
+            const errorHtml = `
+                <div class="error-state">
+                    <h4>❌ Error</h4>
+                    <p>${error}</p>
+                </div>
+            `;
+            
+            if (suffix) {
+                document.getElementById(`json-output-${suffix}`).innerHTML = `{"error": "${error}"}`;
+                document.getElementById(`structured-output-${suffix}`).innerHTML = errorHtml;
+            } else {
+                ['a', 'b'].forEach(s => {
+                    document.getElementById(`json-output-${s}`).innerHTML = `{"error": "${error}"}`;
+                    document.getElementById(`structured-output-${s}`).innerHTML = errorHtml;
+                });
+            }
+        }
+
+        function displayStructuredContent(result, containerId) {
+            const confidence = Math.round(result.confidence_score * 100);
+            
+            const html = `
+                <div class="info-card">
+                    <h4>🎯 Job Overview</h4>
+                    <div class="basic-info">
+                        <div class="info-item">
+                            <strong>Job Title</strong>
+                            ${result.job_title}
+                        </div>
+                        <div class="info-item">
+                            <strong>Company</strong>
+                            ${result.company_name}
+                        </div>
+                        <div class="info-item">
+                            <strong>Location</strong>
+                            ${result.location}
+                        </div>
+                        <div class="info-item">
+                            <strong>Confidence</strong>
+                            <div class="confidence-indicator">
+                                <span>${confidence}%</span>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" style="width: ${confidence}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h4>🛠️ Skills & Requirements</h4>
+                    ${result.required_skills.length > 0 ? `
+                        <div>
+                            <strong>Required:</strong>
+                            <div class="skill-tags">
+                                ${result.required_skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${result.preferred_skills.length > 0 ? `
+                        <div style="margin-top: 10px;">
+                            <strong>Preferred:</strong>
+                            <div class="skill-tags">
+                                ${result.preferred_skills.map(skill => `<span class="skill-tag preferred">${skill}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                ${result.key_responsibilities.length > 0 ? `
+                    <div class="info-card">
+                        <h4>📋 Key Responsibilities</h4>
+                        <div class="list-content">
+                            <ul>
+                                ${result.key_responsibilities.map(resp => `<li>${resp}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${result.parsing_notes.length > 0 ? `
+                    <div class="info-card">
+                        <h4>🔍 Parsing Notes</h4>
+                        <div class="list-content">
+                            <ul>
+                                ${result.parsing_notes.map(note => `<li>${note}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        // File drag and drop
+        const contentTextarea = document.getElementById('jd-content');
+        
+        contentTextarea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            contentTextarea.style.borderColor = '#667eea';
+        });
+        
+        contentTextarea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            contentTextarea.style.borderColor = '#ddd';
+        });
+        
+        contentTextarea.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            contentTextarea.style.borderColor = '#ddd';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => contentTextarea.value = e.target.result;
+                    reader.readAsText(file);
+                }
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                if (isComparisonMode) {
+                    runComparison();
+                } else {
+                    testSinglePrompt();
+                }
+            }
+        });
+
+        // Update comparison selectors when prompts change
+        function updateComparisonSelectorsIfVisible() {
+            if (isComparisonMode) {
+                updateComparisonSelectors();
+            }
+        }
+
+        // Override save and duplicate functions to update comparison selectors
+        const originalSave = saveCurrentPrompt;
+        const originalDuplicate = duplicatePrompt;
+        
+        saveCurrentPrompt = function() {
+            originalSave();
+            updateComparisonSelectorsIfVisible();
+        };
+        
+        duplicatePrompt = function() {
+            originalDuplicate();
+            updateComparisonSelectorsIfVisible();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production CSS Test - Highlighting Colors</title>
+    <style>
+        /* Exact production CSS */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        .panel {
+            background-color: #111111;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .panel-content {
+            padding: 16px;
+        }
+        
+        /* CV content formatting - EXACT from production */
+        .cv-content {
+            min-width: 0;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background: #0a0a0a;
+            color: white;
+            padding: 16px;
+            border: 1px solid #333;
+        }
+        
+        /* Gap Analysis Highlighting - EXACT from production */
+        .highlight-match {
+            background-color: #27ca3f;
+            color: #000000;
+            padding: 2px 4px;
+            font-weight: 600;
+            border-radius: 3px;
+        }
+
+        .highlight-potential {
+            background-color: #ffbd2e;
+            color: #000000;
+            padding: 2px 4px;
+            font-weight: 600;
+            border-radius: 3px;
+        }
+
+        .highlight-gap {
+            background-color: #ff5f56;
+            color: #000000;  /* This should be white, but production CSS says black */
+            padding: 2px 4px;
+            font-weight: 600;
+            border-radius: 3px;
+        }
+        
+        .test-section {
+            background: #222;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Production CSS Highlighting Test</h1>
+    
+    <div class="test-section">
+        <h2>Color Test - Individual Spans</h2>
+        <p>
+            This is <span class="highlight-match">GREEN (match)</span> highlighting.
+        </p>
+        <p>
+            This is <span class="highlight-potential">YELLOW (potential)</span> highlighting.
+        </p>
+        <p>
+            This is <span class="highlight-gap">RED (gap)</span> highlighting.
+        </p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Simulated JD Content with Mixed Highlighting</h2>
+        <div class="cv-content">
+REQUIREMENTS:
+<span class="highlight-potential" title="Python experience present but duration unclear">• 5+ years of professional Python development experience</span>
+<span class="highlight-match" title="React/JavaScript requirement satisfied">• Strong experience with React and modern JavaScript frameworks</span>
+<span class="highlight-potential" title="AWS/Docker experience needs more detail">• Proficiency with AWS cloud platform and containerization (Docker)</span>
+• Experience with Docker containerization and deployment
+<span class="highlight-match" title="PostgreSQL requirement met">• Database design experience, preferably PostgreSQL</span>
+<span class="highlight-match" title="Leadership experience demonstrated">• Leadership experience mentoring junior developers</span>
+<span class="highlight-match" title="Education requirement satisfied">• Bachelor's degree in Computer Science or related field</span>
+
+RESPONSIBILITIES:
+• Lead development of scalable web applications and APIs
+• Mentor and guide junior developers in best practices
+• Design and implement system architecture and technical solutions
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔍 Visual Analysis</h2>
+        <p><strong>Expected colors:</strong></p>
+        <ul>
+            <li>Green: #27ca3f (bright green background, black text)</li>
+            <li>Yellow: #ffbd2e (bright yellow background, black text)</li>
+            <li>Red: #ff5f56 (bright red background, black text)</li>
+        </ul>
+        
+        <p><strong>Question:</strong> Do you see mixed colors above, or does everything appear green?</p>
+        
+        <p><strong>If everything appears green, possible causes:</strong></p>
+        <ul>
+            <li>CSS cascade/specificity issues</li>
+            <li>Browser color rendering problems</li>
+            <li>CSS not loading properly</li>
+            <li>JavaScript overriding styles</li>
+        </ul>
+    </div>
+</body>
+</html>
