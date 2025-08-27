@@ -405,6 +405,24 @@
             </div>
         </div>
 
+        <!-- Analyze Section -->
+        <div class="analyze-section" style="margin-bottom: 30px;">
+            <div class="input-panel">
+                <div class="panel-header">
+                    🔍 Gap Analysis
+                </div>
+                <div class="panel-content" style="text-align: center;">
+                    <p style="margin-bottom: 20px; color: #666; font-size: 16px;">
+                        Process both CV and JD above, then click analyze to perform intelligent gap analysis
+                    </p>
+                    <button class="process-btn" onclick="performGapAnalysis()" id="analyzeBtn" disabled style="max-width: 400px; margin: 0 auto;">
+                        <span id="analyzeBtnText">🚀 Analyze CV vs JD Gap</span>
+                    </button>
+                    <div id="analyzeStatus" style="margin-top: 15px; font-size: 14px; color: #666;"></div>
+                </div>
+            </div>
+        </div>
+
         <div class="results-section">
             <div class="results-grid">
                 <!-- CV Results -->
@@ -433,6 +451,19 @@
                         </div>
                         <div id="jdResults" style="display: none;"></div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gap Analysis Results -->
+        <div class="gap-results-section" id="gapResultsSection" style="display: none; margin-top: 30px;">
+            <div class="result-panel">
+                <div class="result-header" style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white;">
+                    <span>🎯 Gap Analysis Results</span>
+                    <span class="status-indicator status-offline" id="gapResultStatus"></span>
+                </div>
+                <div class="result-content">
+                    <div id="gapResults"></div>
                 </div>
             </div>
         </div>
@@ -526,15 +557,20 @@
                     displayCVResults(cvData);
                     resultStatus.className = 'status-indicator status-online';
                     btnText.textContent = '✅ CV Processed';
+                    checkAnalyzeReadiness();
                 } else {
                     displayError('cvResults', data.error);
                     resultStatus.className = 'status-indicator status-offline';
                     btnText.textContent = '❌ Processing Failed';
+                    cvData = null;
+                    checkAnalyzeReadiness();
                 }
             } catch (error) {
                 displayError('cvResults', error.message);
                 resultStatus.className = 'status-indicator status-offline';
                 btnText.textContent = '❌ Processing Failed';
+                cvData = null;
+                checkAnalyzeReadiness();
             } finally {
                 btn.disabled = false;
                 setTimeout(() => {
@@ -585,15 +621,20 @@
                     displayJDResults(jdData);
                     resultStatus.className = 'status-indicator status-online';
                     btnText.textContent = '✅ JD Processed';
+                    checkAnalyzeReadiness();
                 } else {
                     displayError('jdResults', data.error);
                     resultStatus.className = 'status-indicator status-offline';
                     btnText.textContent = '❌ Processing Failed';
+                    jdData = null;
+                    checkAnalyzeReadiness();
                 }
             } catch (error) {
                 displayError('jdResults', error.message);
                 resultStatus.className = 'status-indicator status-offline';
                 btnText.textContent = '❌ Processing Failed';
+                jdData = null;
+                checkAnalyzeReadiness();
             } finally {
                 btn.disabled = false;
                 setTimeout(() => {
@@ -934,6 +975,457 @@
             const resultsDiv = document.getElementById(resultId);
             resultsDiv.style.display = 'block';
             resultsDiv.innerHTML = `<div class="error-message">❌ ${error}</div>`;
+        }
+
+        function checkAnalyzeReadiness() {
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const analyzeStatus = document.getElementById('analyzeStatus');
+            
+            if (cvData && jdData) {
+                analyzeBtn.disabled = false;
+                analyzeStatus.textContent = '✅ Ready to analyze - Both CV and JD processed';
+                analyzeStatus.style.color = '#4CAF50';
+            } else {
+                analyzeBtn.disabled = true;
+                let missing = [];
+                if (!cvData) missing.push('CV');
+                if (!jdData) missing.push('JD');
+                analyzeStatus.textContent = `⏳ Need to process: ${missing.join(' and ')}`;
+                analyzeStatus.style.color = '#FF9800';
+            }
+        }
+
+        async function performGapAnalysis() {
+            if (!cvData || !jdData) {
+                alert('Please process both CV and JD before analyzing');
+                return;
+            }
+
+            const btn = document.getElementById('analyzeBtn');
+            const btnText = document.getElementById('analyzeBtnText');
+            const gapStatus = document.getElementById('gapResultStatus');
+            const gapSection = document.getElementById('gapResultsSection');
+            
+            // Update UI for processing
+            btn.disabled = true;
+            btnText.textContent = '⏳ Performing Gap Analysis...';
+            gapStatus.className = 'status-indicator status-processing';
+            
+            // Show gap results section and loading
+            gapSection.style.display = 'block';
+            document.getElementById('gapResults').innerHTML = '<div class="loading">Analyzing CV vs JD gaps...</div>';
+
+            try {
+                const response = await fetch('/analyze_gap', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        cv_data: cvData,
+                        jd_data: jdData
+                    }),
+                    timeout: 120000 // 2 minute timeout for analysis
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayGapResults(data.result);
+                    gapStatus.className = 'status-indicator status-online';
+                    btnText.textContent = '✅ Analysis Complete';
+                } else {
+                    displayError('gapResults', data.error);
+                    gapStatus.className = 'status-indicator status-offline';
+                    btnText.textContent = '❌ Analysis Failed';
+                }
+            } catch (error) {
+                displayError('gapResults', error.message);
+                gapStatus.className = 'status-indicator status-offline';
+                btnText.textContent = '❌ Analysis Failed';
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => {
+                    btnText.textContent = '🚀 Analyze CV vs JD Gap';
+                }, 3000);
+            }
+        }
+
+        function displayGapResults(data) {
+            console.log('displayGapResults received data:', data);
+            console.log('cv_highlighted type:', typeof data.cv_highlighted);
+            console.log('jd_highlighted type:', typeof data.jd_highlighted);
+            
+            const resultsDiv = document.getElementById('gapResults');
+            
+            let html = `
+                <div style="margin-bottom: 20px;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h2 style="margin: 0 0 10px 0;">🎯 Match Score: ${data.match_score.overall_score.toFixed(1)}%</h2>
+                        <div style="display: flex; justify-content: space-around; margin-top: 15px;">
+                            <div><strong>Skills:</strong> ${data.match_score.skills_score.toFixed(1)}%</div>
+                            <div><strong>Experience:</strong> ${data.match_score.experience_score.toFixed(1)}%</div>
+                            <div><strong>Education:</strong> ${data.match_score.education_score.toFixed(1)}%</div>
+                            <div><strong>Qualifications:</strong> ${data.match_score.qualifications_score.toFixed(1)}%</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Strengths Section
+            if (data.match_score.strengths && data.match_score.strengths.length > 0) {
+                html += `
+                    <div style="background: #e8f5e8; border-left: 4px solid #4CAF50; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+                        <h3 style="color: #2e7d32; margin-top: 0;">💪 Strengths</h3>
+                        <ul style="margin: 10px 0;">
+                            ${data.match_score.strengths.map(strength => `<li style="margin-bottom: 8px;">${strength}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Gaps Section
+            if (data.match_score.gaps && data.match_score.gaps.length > 0) {
+                html += `
+                    <div style="background: #ffebee; border-left: 4px solid #f44336; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+                        <h3 style="color: #c62828; margin-top: 0;">⚠️ Identified Gaps</h3>
+                        <ul style="margin: 10px 0;">
+                            ${data.match_score.gaps.map(gap => `<li style="margin-bottom: 8px;">${gap}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Recommendations Section
+            if (data.match_score.recommendations && data.match_score.recommendations.length > 0) {
+                html += `
+                    <div style="background: #fff3e0; border-left: 4px solid #FF9800; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+                        <h3 style="color: #e65100; margin-top: 0;">💡 Recommendations</h3>
+                        <ul style="margin: 10px 0;">
+                            ${data.match_score.recommendations.map(rec => `<li style="margin-bottom: 8px;">${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Analysis Notes
+            if (data.analysis_notes) {
+                html += `
+                    <div style="background: #f5f5f5; border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+                        <h3 style="color: #555; margin-top: 0;">📝 Detailed Analysis</h3>
+                        <p style="line-height: 1.6; margin: 0;">${data.analysis_notes}</p>
+                    </div>
+                `;
+            }
+
+            // Side-by-side text comparison with highlighting
+            html += '<div style="margin-top: 30px;"><h2 style="color: #333; text-align: center;">📊 Side-by-Side Text Comparison</h2></div>';
+            html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">';
+            
+            // CV Text with highlighting
+            html += '<div><h3 style="color: #4CAF50;">📄 CV Content</h3>';
+            html += '<div style="background: #f8f9fa; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto; border: 1px solid #ddd;">';
+            html += formatTextWithHighlights(data.cv_data, data.cv_highlighted, 'cv');
+            html += '</div></div>';
+            
+            // JD Text with highlighting  
+            html += '<div><h3 style="color: #2196F3;">📋 Job Description Content</h3>';
+            html += '<div style="background: #f8f9fa; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto; border: 1px solid #ddd;">';
+            html += formatTextWithHighlights(data.jd_data, data.jd_highlighted, 'jd');
+            html += '</div></div>';
+            
+            html += '</div>';
+            
+            // Highlight Legend
+            html += '<div style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #e0e0e0;">';
+            html += '<h4 style="margin: 0 0 10px 0; color: #333;">🎨 Highlight Legend</h4>';
+            html += '<div style="display: flex; gap: 20px; flex-wrap: wrap;">';
+            html += '<div style="display: flex; align-items: center; gap: 8px;"><div style="width: 20px; height: 20px; background: #e8f5e8; border: 2px solid #4CAF50; border-radius: 4px;"></div><span>✅ Matches</span></div>';
+            html += '<div style="display: flex; align-items: center; gap: 8px;"><div style="width: 20px; height: 20px; background: #ffebee; border: 2px solid #f44336; border-radius: 4px;"></div><span>⚠️ Gaps</span></div>';
+            html += '<div style="display: flex; align-items: center; gap: 8px;"><div style="width: 20px; height: 20px; background: #fff3e0; border: 2px solid #FF9800; border-radius: 4px;"></div><span>💡 Potential</span></div>';
+            html += '</div></div>';
+
+            // Metadata
+            html += `
+                <div style="margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 12px; color: #666; text-align: center;">
+                    Analysis completed at: ${data.timestamp}
+                </div>
+            `;
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Old formatHighlights function removed - replaced by formatTextWithHighlights
+
+        function formatTextWithHighlights(textData, highlights, type) {
+            console.log(`formatTextWithHighlights called for ${type}:`, textData, highlights);
+            
+            try {
+                // Get the raw text content
+                let rawText = '';
+                
+                if (type === 'cv') {
+                    // For CV, build from structured data
+                    rawText = buildCVText(textData);
+                } else if (type === 'jd') {
+                    // For JD, build from structured data
+                    rawText = buildJDText(textData);
+                }
+
+                console.log(`Raw text for ${type}:`, rawText.substring(0, 200) + '...');
+
+                // If no valid text, return error
+                if (!rawText || rawText.length === 0) {
+                    return `<div style="color: #666; font-style: italic;">No text content available for ${type}</div>`;
+                }
+
+                // Apply precise highlighting based on Claude's analysis
+                let highlightedText = escapeHtml(rawText);
+                
+                if (highlights && Array.isArray(highlights) && highlights.length > 0) {
+                    highlights.forEach(highlight => {
+                        const reason = highlight.reason || '';
+                        const className = highlight.class || '';
+                        const address = highlight.address || '';
+                        
+                        console.log(`Processing intelligent highlight: ${address} - ${reason}`);
+                        
+                        // INTELLIGENT HIGHLIGHTING: Determine if this is skill-level or section-level
+                        const isSkillHighlight = reason.toLowerCase().includes('skill') || 
+                                               reason.toLowerCase().includes('technology') ||
+                                               reason.toLowerCase().includes('requirement not') ||
+                                               address.includes('skill') ||
+                                               /\b(Python|React|AWS|Docker|JavaScript|SQL|Git|Kubernetes)\b/i.test(reason);
+                        
+                        const isExperienceHighlight = reason.toLowerCase().includes('experience') ||
+                                                    reason.toLowerCase().includes('role') ||
+                                                    reason.toLowerCase().includes('position') ||
+                                                    reason.toLowerCase().includes('could better') ||
+                                                    reason.toLowerCase().includes('reframed') ||
+                                                    address.includes('position');
+                        
+                        if (isSkillHighlight) {
+                            // FOR SKILLS: Extract and highlight specific technical terms
+                            const targetTerms = extractPreciseTerms(reason, type);
+                            console.log(`Skill-level highlighting for terms:`, targetTerms);
+                            
+                            targetTerms.forEach(term => {
+                                if (term.length > 1) {
+                                    const regex = new RegExp(`\\b(${escapeRegex(term)})\\b`, 'gi');
+                                    const bgColor = getHighlightColor(className);
+                                    const borderColor = getBorderColor(className);
+                                    
+                                    highlightedText = highlightedText.replace(regex, 
+                                        `<mark style="background-color: ${bgColor}; padding: 3px 6px; border-radius: 4px; font-weight: 600; color: #333; border: 2px solid ${borderColor};" title="[SKILL] ${reason}">$1</mark>`
+                                    );
+                                }
+                            });
+                        } else if (isExperienceHighlight) {
+                            // FOR EXPERIENCE: Find and highlight relevant experience sections/sentences
+                            console.log(`Experience-level highlighting for section improvement`);
+                            
+                            // Look for key experience phrases to highlight as sections
+                            const experiencePatterns = [
+                                /Software Engineer[^.\n]*/gi,
+                                /Developer[^.\n]*/gi,
+                                /\b\d+\+?\s*years?[^.\n]*/gi,
+                                /Developed[^.\n]*/gi,
+                                /Implemented[^.\n]*/gi,
+                                /Led[^.\n]*/gi,
+                                /Managed[^.\n]*/gi,
+                                /Collaborated[^.\n]*/gi
+                            ];
+                            
+                            experiencePatterns.forEach(pattern => {
+                                const bgColor = getHighlightColor(className);
+                                const borderColor = getBorderColor(className);
+                                
+                                highlightedText = highlightedText.replace(pattern, 
+                                    `<mark style="background-color: ${bgColor}; padding: 3px 6px; border-radius: 4px; font-weight: 400; color: #333; border: 2px solid ${borderColor};" title="[EXPERIENCE] ${reason}">$&</mark>`
+                                );
+                            });
+                        } else {
+                            // FALLBACK: Default highlighting approach for unclear cases
+                            console.log(`Fallback highlighting approach`);
+                            const targetTerms = extractPreciseTerms(reason, type);
+                            
+                            targetTerms.forEach(term => {
+                                if (term.length > 1) {
+                                    const regex = new RegExp(`\\b(${escapeRegex(term)})\\b`, 'gi');
+                                    const bgColor = getHighlightColor(className);
+                                    const borderColor = getBorderColor(className);
+                                    
+                                    highlightedText = highlightedText.replace(regex, 
+                                        `<mark style="background-color: ${bgColor}; padding: 3px 6px; border-radius: 4px; font-weight: 600; color: #333; border: 2px solid ${borderColor};" title="${reason}">$1</mark>`
+                                    );
+                                }
+                            });
+                        }
+                    });
+                }
+
+                return `<div style="line-height: 1.6; color: #333; font-size: 14px; white-space: pre-wrap; font-family: monospace;">${highlightedText}</div>`;
+            } catch (error) {
+                console.error(`Error in formatTextWithHighlights for ${type}:`, error);
+                return `<div style="color: #f44336;">Error displaying ${type} content: ${error.message}</div>`;
+            }
+        }
+
+        function buildCVText(cvData) {
+            let text = '';
+            
+            if (cvData.full_name) text += `${cvData.full_name}\n\n`;
+            if (cvData.professional_summary) text += `PROFESSIONAL SUMMARY:\n${cvData.professional_summary.join('\n')}\n\n`;
+            if (cvData.key_skills) text += `KEY SKILLS:\n${cvData.key_skills.join(', ')}\n\n`;
+            
+            if (cvData.work_experience && cvData.work_experience.length > 0) {
+                text += 'WORK EXPERIENCE:\n';
+                cvData.work_experience.forEach(job => {
+                    text += `${job.position} at ${job.company} (${job.duration})\n`;
+                    if (job.responsibilities) {
+                        text += job.responsibilities.map(r => `• ${r}`).join('\n') + '\n';
+                    }
+                    text += '\n';
+                });
+            }
+            
+            if (cvData.education && cvData.education.length > 0) {
+                text += 'EDUCATION:\n';
+                cvData.education.forEach(edu => {
+                    text += `${edu.degree} ${edu.field ? 'in ' + edu.field : ''} - ${edu.institution} (${edu.graduation})\n`;
+                });
+            }
+            
+            return text;
+        }
+
+        function buildJDText(jdData) {
+            let text = '';
+            
+            if (jdData.job_title) text += `${jdData.job_title}\n`;
+            if (jdData.company_name) text += `${jdData.company_name}\n`;
+            if (jdData.location) text += `Location: ${jdData.location}\n\n`;
+            
+            if (jdData.job_summary && jdData.job_summary.length > 0) {
+                text += `JOB SUMMARY:\n${jdData.job_summary.join('\n')}\n\n`;
+            }
+            
+            if (jdData.key_responsibilities && jdData.key_responsibilities.length > 0) {
+                text += `KEY RESPONSIBILITIES:\n${jdData.key_responsibilities.map(r => `• ${r}`).join('\n')}\n\n`;
+            }
+            
+            if (jdData.required_skills && jdData.required_skills.length > 0) {
+                text += `REQUIRED SKILLS:\n${jdData.required_skills.map(s => `• ${s}`).join('\n')}\n\n`;
+            }
+            
+            if (jdData.preferred_skills && jdData.preferred_skills.length > 0) {
+                text += `PREFERRED SKILLS:\n${jdData.preferred_skills.map(s => `• ${s}`).join('\n')}\n\n`;
+            }
+            
+            if (jdData.required_qualifications && jdData.required_qualifications.length > 0) {
+                text += `REQUIRED QUALIFICATIONS:\n${jdData.required_qualifications.map(q => `• ${q}`).join('\n')}\n\n`;
+            }
+            
+            if (jdData.preferred_qualifications && jdData.preferred_qualifications.length > 0) {
+                text += `PREFERRED QUALIFICATIONS:\n${jdData.preferred_qualifications.map(q => `• ${q}`).join('\n')}\n\n`;
+            }
+            
+            if (jdData.required_experience && jdData.required_experience.length > 0) {
+                text += `REQUIRED EXPERIENCE:\n${jdData.required_experience.map(e => `• ${e}`).join('\n')}\n\n`;
+            }
+            
+            if (jdData.work_environment && jdData.work_environment.length > 0) {
+                text += `WORK ENVIRONMENT:\n${jdData.work_environment.map(w => `• ${w}`).join('\n')}\n\n`;
+            }
+            
+            if (jdData.benefits && jdData.benefits.length > 0) {
+                text += `BENEFITS:\n${jdData.benefits.map(b => `• ${b}`).join('\n')}\n\n`;
+            }
+            
+            if (jdData.company_info && jdData.company_info.length > 0) {
+                text += `COMPANY INFO:\n${jdData.company_info.join('\n')}\n\n`;
+            }
+            
+            if (jdData.team_info && jdData.team_info.length > 0) {
+                text += `TEAM INFO:\n${jdData.team_info.join('\n')}\n\n`;
+            }
+            
+            return text;
+        }
+
+        function extractPreciseTerms(reason, type) {
+            // Extract precise terms that Claude specifically identified
+            const terms = [];
+            
+            // Technology and skill patterns (most important)
+            const skillPatterns = [
+                // Direct skill mentions
+                /\b(Python|JavaScript|React|Angular|Vue|Node\.js|Java|C\+\+|C#|SQL|HTML|CSS|AWS|Azure|Docker|Kubernetes|Git|Linux|Windows|ServiceNow|Salesforce|Oracle|Microsoft|Adobe)\b/gi,
+                // Skills in context
+                /(?:contains?|includes?|mentions?|demonstrates?|shows?|has|lacks?|missing|requires?)\s+([A-Z][a-zA-Z]*(?:\s+[A-Z][a-zA-Z]*)*)/g,
+                // Skills with specific descriptors
+                /([A-Z][a-zA-Z]+)\s+(?:requirement|skill|technology|experience|certification|knowledge|expertise)/gi,
+                // Quoted or emphasized terms
+                /"([^"]+)"/g,
+                /\*([^*]+)\*/g,
+                // Technical terms in uppercase
+                /\b([A-Z]{2,})\b/g
+            ];
+            
+            // Job role and position patterns
+            const rolePatterns = [
+                /(architect|developer|engineer|manager|director|analyst|consultant|specialist|lead|senior|junior|principal)/gi,
+                /(leadership|management|executive|strategic|technical|platform|data|finance)/gi
+            ];
+            
+            // Education and certification patterns  
+            const qualificationPatterns = [
+                /(MBA|Master|Bachelor|PhD|degree|certification|certified|CTA|CMA)/gi,
+                /(university|college|institution|school)/gi
+            ];
+            
+            const allPatterns = [...skillPatterns, ...rolePatterns, ...qualificationPatterns];
+            
+            allPatterns.forEach(pattern => {
+                const matches = [...reason.matchAll(pattern)];
+                matches.forEach(match => {
+                    const term = match[1] || match[0];
+                    if (term && term.length > 1) {
+                        const cleaned = term.trim().replace(/[^\w\s.-]/g, '');
+                        if (cleaned.length > 1 && !cleaned.match(/^(the|and|or|with|for|in|at|on|to|from|by|of|is|are|was|were|has|have|had|will|would|could|should|may|might|can|must)$/i)) {
+                            terms.push(cleaned);
+                        }
+                    }
+                });
+            });
+            
+            return [...new Set(terms)]; // Remove duplicates
+        }
+
+        function getHighlightColor(className) {
+            switch (className) {
+                case 'highlight-match': return '#e8f5e8';
+                case 'highlight-gap': return '#ffebee';  
+                case 'highlight-potential': return '#fff3e0';
+                default: return '#f0f0f0';
+            }
+        }
+
+        function getBorderColor(className) {
+            switch (className) {
+                case 'highlight-match': return '#4CAF50';
+                case 'highlight-gap': return '#f44336';  
+                case 'highlight-potential': return '#FF9800';
+                default: return '#ddd';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
     </script>
 </body>

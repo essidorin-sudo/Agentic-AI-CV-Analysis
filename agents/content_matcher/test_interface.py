@@ -9,6 +9,7 @@ displaying results side by side with status indicators.
 import os
 import sys
 from pathlib import Path
+import requests
 
 # Add current directory to path for imports
 sys.path.append(str(Path(__file__).parent))
@@ -186,6 +187,79 @@ def analyze_match():
     except Exception as e:
         return jsonify({
             'error': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
+
+@app.route('/analyze_gap', methods=['POST'])
+def analyze_gap():
+    """Perform gap analysis using the Gap Analyst agent"""
+    try:
+        data = request.get_json()
+        cv_data = data.get('cv_data', {})
+        jd_data = data.get('jd_data', {})
+        
+        if not cv_data or not jd_data:
+            return jsonify({'error': 'Both CV and JD data required'}), 400
+        
+        # Send to Gap Analyst agent
+        gap_analyst_url = 'http://localhost:5008'
+        
+        print(f"📊 Sending gap analysis request to {gap_analyst_url}")
+        print(f"📄 CV: {cv_data.get('full_name', 'Unknown')}")
+        print(f"📋 JD: {jd_data.get('job_title', 'Unknown')}")
+        
+        response = requests.post(
+            f"{gap_analyst_url}/analyze_gap",
+            json={
+                'cv_data': cv_data,
+                'jd_data': jd_data
+            },
+            timeout=120  # 2 minute timeout
+        )
+        
+        if response.status_code == 200:
+            gap_result = response.json()
+            if gap_result.get('success'):
+                print(f"✅ Gap analysis completed successfully")
+                print(f"📊 CV highlights type: {type(gap_result['result']['cv_highlighted'])}")
+                print(f"📊 JD highlights type: {type(gap_result['result']['jd_highlighted'])}")
+                print(f"📊 CV highlights: {gap_result['result']['cv_highlighted']}")
+                print(f"📊 JD highlights: {gap_result['result']['jd_highlighted']}")
+                return jsonify(gap_result)
+            else:
+                print(f"❌ Gap Analyst returned error: {gap_result.get('error')}")
+                return jsonify({
+                    'success': False,
+                    'error': gap_result.get('error', 'Gap analysis failed')
+                }), 400
+        else:
+            error_msg = f"Gap Analyst responded with status {response.status_code}"
+            print(f"❌ {error_msg}")
+            return jsonify({
+                'success': False,
+                'error': error_msg
+            }), 500
+            
+    except requests.exceptions.ConnectionError:
+        error_msg = "Could not connect to Gap Analyst agent (port 5008). Make sure it's running."
+        print(f"❌ {error_msg}")
+        return jsonify({
+            'success': False,
+            'error': error_msg
+        }), 500
+    except requests.exceptions.Timeout:
+        error_msg = "Gap analysis timed out"
+        print(f"❌ {error_msg}")
+        return jsonify({
+            'success': False,
+            'error': error_msg
+        }), 500
+    except Exception as e:
+        error_msg = f"Gap analysis error: {str(e)}"
+        print(f"❌ {error_msg}")
+        return jsonify({
+            'success': False,
+            'error': error_msg,
             'traceback': traceback.format_exc()
         }), 500
 

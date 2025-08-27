@@ -119,18 +119,28 @@ class GapAnalystAgent:
     def _get_gap_analysis_prompt(self) -> str:
         """Get the core gap analysis prompt template"""
         
-        return """You are an expert CV-JD Gap Analysis Agent. Analyze the CV and Job Description to create address-based highlighting instructions and comprehensive scoring.
+        return """You are an expert CV-JD Gap Analysis Agent. Analyze the CV and Job Description to create INTELLIGENT address-based highlighting instructions and comprehensive scoring.
 
-NEW APPROACH - ADDRESS-BASED HIGHLIGHTING:
-Instead of returning full highlighted content, you'll return highlighting instructions that reference invisible address markup already embedded in the CV and JD text.
+INTELLIGENT HIGHLIGHTING APPROACH - CRITICAL REQUIREMENTS:
 
-The CV and JD text contain invisible HTML comments like:
-CV: <!--cv_section_5-->EXPERIENCE<!--/cv_section_5-->, <!--cv_position_12-->Software Engineer at Google (2020-2024)<!--/cv_position_12-->
-JD: <!--jd_section_3-->REQUIREMENTS<!--/jd_section_3-->, <!--jd_requirement_15-->5+ years Python experience<!--/jd_requirement_15-->
+1. CONTENT-AWARE GRANULARITY:
+   - SKILLS/TECHNOLOGIES: Look for line-level addresses containing specific skills, but note in reason which SPECIFIC terms to highlight (e.g., "Python", "AWS", "Docker")
+   - EXPERIENCE/QUALIFICATIONS: Target whole sections/positions that need narrative improvement or reframing
+   
+2. ADDRESS VALIDATION:
+   - ONLY reference addresses that actually exist in the provided markup
+   - Available CV addresses: cv_section_X, cv_position_X, cv_item_X, cv_line_X
+   - Available JD addresses: jd_section_X, jd_requirement_X, jd_skill_X, jd_qualification_X, jd_line_X
+   - DO NOT invent addresses like cv_skill_python or jd_requirement_aws - they don't exist
+   
+3. INTELLIGENT REASONING:
+   - For skills: Specify exactly which skill terms within the line need highlighting
+   - For experience: Explain what narrative improvements are needed for the whole section
+   - Make clear whether you're targeting individual words or complete sections
 
 TASK: 
 1. Analyze matches between CV and JD content
-2. Return highlighting instructions by address reference
+2. Return highlighting instructions by address reference with intelligent content targeting
 3. Provide comprehensive scoring and recommendations
 
 SCORING GUIDELINES (return scores as percentages 0.0-100.0):
@@ -142,8 +152,22 @@ SCORING GUIDELINES (return scores as percentages 0.0-100.0):
 
 HIGHLIGHTING CLASSES:
 - "highlight-match": Exact matches between CV and JD (GREEN)
-- "highlight-potential": Partial/transferable matches (YELLOW)
+- "highlight-potential": Partial/transferable matches (ORANGE) 
 - "highlight-gap": Missing required skills/experience from CV (RED)
+
+INTELLIGENT HIGHLIGHTING APPROACH:
+1. SKILLS/SYSTEMS/TECHNOLOGIES: Highlight specific words or phrases when:
+   - Specific technical skills are mentioned (Python, AWS, React, ServiceNow, etc.)
+   - Certifications or credentials are referenced
+   - Tools, frameworks, or platforms are discussed
+   - Use precise addressing for individual skill terms
+
+2. EXPERIENCES/QUALIFICATIONS: Highlight whole sentences or sections when:
+   - Job descriptions need more specific details or quantification
+   - Achievements lack concrete metrics or impact statements  
+   - Responsibilities could be better contextualized to match JD requirements
+   - Educational background could be better positioned for the role
+   - Use broader addressing for complete statements that need improvement
 
 CV Data: {cv_data}
 
@@ -152,14 +176,14 @@ JD Data: {jd_data}
 Return ONLY this JSON structure:
 {{
     "cv_highlighting": [
-        {{"address": "cv_section_5", "class": "highlight-match", "reason": "Experience section matches JD requirements"}},
-        {{"address": "cv_position_12", "class": "highlight-match", "reason": "Software Engineer role directly relevant"}},
-        {{"address": "cv_item_18", "class": "highlight-potential", "reason": "Leadership experience partially matches JD team lead requirements"}}
+        {{"address": "cv_skill_python", "class": "highlight-match", "reason": "Python skill directly matches JD requirement"}},
+        {{"address": "cv_experience_section_2", "class": "highlight-potential", "reason": "This experience description could be enhanced with specific metrics and technologies used to better match platform architect requirements"}},
+        {{"address": "cv_skill_leadership", "class": "highlight-match", "reason": "Leadership experience aligns with senior role expectations"}}
     ],
     "jd_highlighting": [
-        {{"address": "jd_requirement_15", "class": "highlight-match", "reason": "Python requirement matched by candidate"}},
-        {{"address": "jd_skill_22", "class": "highlight-gap", "reason": "AWS requirement missing from candidate profile"}},
-        {{"address": "jd_qualification_8", "class": "highlight-match", "reason": "Education requirement satisfied"}}
+        {{"address": "jd_requirement_servicenow", "class": "highlight-gap", "reason": "ServiceNow certification requirement not found in CV"}},
+        {{"address": "jd_requirement_experience", "class": "highlight-potential", "reason": "5+ years experience requirement - candidate's experience should be repositioned to emphasize platform and architecture work"}},
+        {{"address": "jd_skill_aws", "class": "highlight-gap", "reason": "AWS cloud experience specifically required but not mentioned in CV"}}
     ],
     "match_score": {{
         "overall_score": 75.0,

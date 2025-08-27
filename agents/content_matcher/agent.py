@@ -86,11 +86,11 @@ class ContentMatcherAgent:
             else:
                 return False, {}, "No job description provided"
             
-            # Send to JD Parser
+            # Send to JD Parser (longer timeout for URL processing)
             response = requests.post(
                 f"{self.jd_parser_url}/parse",
                 json=request_data,
-                timeout=30
+                timeout=300  # 5 minute timeout to match JD Parser frontend
             )
             
             if response.status_code == 200:
@@ -137,7 +137,7 @@ class ContentMatcherAgent:
             response = requests.post(
                 f"{self.cv_parser_url}/parse",
                 json={'cv_text': cv_text},
-                timeout=30
+                timeout=60  # Increased timeout for CV processing
             )
             
             if response.status_code == 200:
@@ -188,7 +188,7 @@ class ContentMatcherAgent:
             response = requests.post(
                 f"{self.cv_parser_url}/parse_file",
                 files=files,
-                timeout=60  # Longer timeout for file processing
+                timeout=120  # Extended timeout for file processing
             )
             
             if response.status_code == 200:
@@ -259,7 +259,7 @@ class ContentMatcherAgent:
         
         # Check CV Parser
         try:
-            response = requests.get(f"{self.cv_parser_url}/", timeout=5)
+            response = requests.get(f"{self.cv_parser_url}/health", timeout=5)
             status['cv_parser'] = response.status_code == 200
         except:
             pass
