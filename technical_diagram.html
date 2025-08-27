@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agentic AI CV Analysis - System Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f8fafc;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #1e293b;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+        }
+        .diagram {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: 12px;
+        }
+        .step {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #3b82f6;
+        }
+        .step h4 {
+            margin: 0 0 10px 0;
+            color: #1e293b;
+        }
+        .step p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ Agentic AI CV Analysis System</h1>
+        
+        <div class="diagram">
+            <div class="mermaid">
+flowchart TD
+    %% User Interface Layer
+    User([👤 User]) --> WebUI[🖥️ React Frontend<br/>Port 3000]
+    Admin([👥 Admin]) --> AdminUI[⚙️ Admin Interface<br/>Port 3001]
+    
+    %% API Gateway
+    WebUI --> API[🔗 Flask API<br/>Port 8000<br/>Authentication & Routing]
+    AdminUI --> API
+    
+    %% Authentication & Analytics
+    API --> Auth{🔐 JWT Auth<br/>Validate Token}
+    Auth -->|✅ Valid| Analytics[📊 Analytics<br/>Track Events]
+    Auth -->|❌ Invalid| Login[🔑 Login Required]
+    Login --> WebUI
+    
+    %% File Upload Flow
+    Analytics --> Upload{📤 File Upload?}
+    Upload -->|CV File| FileStore[💾 File Storage<br/>Save to Disk]
+    Upload -->|Job Text/URL| JDInput[📝 Job Description<br/>Text Input]
+    
+    %% AI Processing Pipeline
+    FileStore --> CVParser[🤖 CV Parser Agent<br/>Port 5005<br/>Extract: Skills, Experience, Education]
+    JDInput --> JDParser[🤖 JD Parser Agent<br/>Port 5007<br/>Extract: Requirements, Keywords]
+    
+    %% Content Analysis
+    CVParser --> CVData[(📄 Parsed CV Data<br/>Structured JSON)]
+    JDParser --> JDData[(💼 Parsed JD Data<br/>Structured JSON)]
+    
+    CVData --> Matcher[🎯 Content Matcher<br/>Port 5006<br/>Compare & Score Matches]
+    JDData --> Matcher
+    
+    %% Gap Analysis
+    Matcher --> MatchResults[(🔍 Match Results<br/>Similarity Scores)]
+    MatchResults --> GapAnalyst[📊 Gap Analyst<br/>Port 5008<br/>Generate Insights & Recommendations]
+    
+    %% Results & Storage
+    GapAnalyst --> FinalResults[(📈 Analysis Results<br/>Gaps, Matches, Recommendations)]
+    FinalResults --> Database[🗄️ Database<br/>SQLite/PostgreSQL<br/>Store Results]
+    
+    %% Display Results
+    Database --> ResultsAPI[📋 Results API<br/>Formatted Response]
+    ResultsAPI --> WebUI
+    
+    %% Admin Dashboard
+    Database --> AdminDash[📊 Admin Dashboard<br/>Analytics & Management]
+    AdminDash --> AdminUI
+    
+    %% External Services
+    CVParser -.->|AI Calls| Claude[🧠 Anthropic Claude<br/>Language Processing]
+    JDParser -.->|AI Calls| Claude
+    Matcher -.->|AI Calls| Claude
+    GapAnalyst -.->|AI Calls| Claude
+    
+    %% Error Handling & Loops
+    CVParser -->|❌ Parse Error| ErrorLog[⚠️ Error Logging]
+    JDParser -->|❌ Parse Error| ErrorLog
+    ErrorLog --> Analytics
+    
+    %% User Feedback Loop
+    WebUI -->|🔄 New Analysis| API
+    AdminUI -->|👥 Manage Users| API
+    
+    %% Styling
+    classDef userInterface fill:#dbeafe,stroke:#3b82f6,stroke-width:3px,color:#1e40af
+    classDef apiLayer fill:#dcfce7,stroke:#16a34a,stroke-width:3px,color:#15803d
+    classDef aiAgent fill:#fed7aa,stroke:#ea580c,stroke-width:3px,color:#c2410c
+    classDef dataStore fill:#e0e7ff,stroke:#6366f1,stroke-width:3px,color:#4f46e5
+    classDef external fill:#fce7f3,stroke:#ec4899,stroke-width:3px,color:#be185d
+    classDef process fill:#f3e8ff,stroke:#a855f7,stroke-width:3px,color:#7c3aed
+    
+    class User,WebUI,AdminUI userInterface
+    class API,Auth,Analytics,ResultsAPI,AdminDash apiLayer
+    class CVParser,JDParser,Matcher,GapAnalyst aiAgent
+    class Database,CVData,JDData,MatchResults,FinalResults,FileStore dataStore
+    class Claude external
+    class Upload,JDInput,ErrorLog,Login process
+            </div>
+        </div>
+        
+        <div class="process-steps">
+            <div class="step">
+                <h4>1️⃣ User Input</h4>
+                <p>User uploads CV file and inputs job description through React frontend. Authentication required via JWT tokens.</p>
+            </div>
+            <div class="step">
+                <h4>2️⃣ File Processing</h4>
+                <p>CV files stored to disk, job descriptions processed as text. All actions tracked by analytics system.</p>
+            </div>
+            <div class="step">
+                <h4>3️⃣ AI Parsing</h4>
+                <p>Two parallel agents extract structured data: CV Parser (skills, experience) and JD Parser (requirements).</p>
+            </div>
+            <div class="step">
+                <h4>4️⃣ Content Matching</h4>
+                <p>Content Matcher agent compares parsed CV and JD data, generates similarity scores using AI analysis.</p>
+            </div>
+            <div class="step">
+                <h4>5️⃣ Gap Analysis</h4>
+                <p>Gap Analyst processes match results to identify skill gaps, experience gaps, and generates recommendations.</p>
+            </div>
+            <div class="step">
+                <h4>6️⃣ Results Display</h4>
+                <p>Final analysis stored in database and displayed to user with color-coded highlights and actionable insights.</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; border-left: 5px solid #0ea5e9;">
+            <h3>🔄 System Features:</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div><strong>🔐 Security:</strong> JWT authentication, bcrypt password hashing</div>
+                <div><strong>📊 Analytics:</strong> Real-time event tracking and user behavior analysis</div>
+                <div><strong>🤖 AI-Powered:</strong> 4 specialized agents using Anthropic Claude</div>
+                <div><strong>📱 Responsive:</strong> Mobile-friendly interface with drag-drop uploads</div>
+                <div><strong>⚡ Performance:</strong> Parallel processing with async agent communication</div>
+                <div><strong>🗄️ Persistent:</strong> Database storage for users, CVs, jobs, and results</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#ffffff',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#3b82f6',
+                lineColor: '#64748b',
+                sectionBkgColor: '#f8fafc',
+                altSectionBkgColor: '#ffffff',
+                gridColor: '#cbd5e1',
+                arrowheadColor: '#374151',
+                fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+                fontSize: '13px'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20
+            }
+        });
+    </script>
+</body>
+</html>
