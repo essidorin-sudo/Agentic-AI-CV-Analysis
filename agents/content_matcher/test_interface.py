@@ -196,17 +196,17 @@ if __name__ == '__main__':
     templates_dir.mkdir(exist_ok=True)
     
     print("🚀 Starting Content Matcher Agent Testing Interface...")
-    print("📍 Access at: http://localhost:5005")
+    print("📍 Access at: http://localhost:5006")
     print("🔧 Agent Version:", matcher_agent.version)
     
     # Check agent status on startup
     status = matcher_agent.check_agents_status()
     print(f"\n📊 Dependent Agent Status:")
-    print(f"   JD Parser (port 5003): {'✅ Online' if status['jd_parser'] else '❌ Offline'}")
-    print(f"   CV Parser (port 5004): {'✅ Online' if status['cv_parser'] else '❌ Offline'}")
+    print(f"   JD Parser (port 5007): {'✅ Online' if status['jd_parser'] else '❌ Offline'}")
+    print(f"   CV Parser (port 5005): {'✅ Online' if status['cv_parser'] else '❌ Offline'}")
     
     if not all(status.values()):
         print("\n⚠️  Warning: Some dependent agents are offline!")
         print("   Make sure both JD Parser and CV Parser agents are running")
     
-    app.run(debug=True, host='0.0.0.0', port=5005)
+    app.run(debug=True, host='0.0.0.0', port=5006)

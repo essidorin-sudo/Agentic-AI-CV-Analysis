@@ -55,8 +55,8 @@ class ContentMatcherAgent:
         self.agent_id = f"content_matcher_{datetime.now().strftime('%Y%m%d')}"
         
         # Agent endpoints
-        self.jd_parser_url = self.config.get('jd_parser_url', 'http://localhost:5003')
-        self.cv_parser_url = self.config.get('cv_parser_url', 'http://localhost:5004')
+        self.jd_parser_url = self.config.get('jd_parser_url', 'http://localhost:5007')
+        self.cv_parser_url = self.config.get('cv_parser_url', 'http://localhost:5005')
         
         print(f"🤖 Content Matcher Agent v{self.version} initialized")
         print(f"📍 JD Parser: {self.jd_parser_url}")
