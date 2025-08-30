@@ -35,6 +35,58 @@ def parse():
         print(f"Traceback: {traceback.format_exc()}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/parse_file', methods=['POST'])
+def parse_file():
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'No file selected'}), 400
+        
+        # Read file content
+        file_content = file.read()
+        filename = file.filename
+        
+        # For text files, extract text and use regular text parsing
+        if filename.lower().endswith(('.txt', '.text')):
+            try:
+                # Decode text content
+                cv_text = file_content.decode('utf-8')
+                result = agent.parse_cv(cv_text)
+                print(f"✅ Text file processed successfully: {filename}")
+            except UnicodeDecodeError:
+                # Try with different encoding
+                try:
+                    cv_text = file_content.decode('latin-1')
+                    result = agent.parse_cv(cv_text)
+                    print(f"✅ Text file processed with latin-1 encoding: {filename}")
+                except Exception as e:
+                    print(f"❌ Failed to decode text file: {e}")
+                    return jsonify({'success': False, 'error': f'Failed to decode text file: {str(e)}'}), 400
+        else:
+            # For binary files (PDF, DOC, DOCX), use file parsing
+            result = agent.parse_cv_file(file_content, filename)
+        
+        return jsonify({
+            'success': True,
+            'result': agent.to_dict(result),
+            'agent_info': {
+                'version': agent.version,
+                'agent_id': agent.agent_id
+            },
+            'file_info': {
+                'filename': filename,
+                'size': len(file_content)
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error parsing CV file: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({'status': 'healthy', 'version': agent.version})

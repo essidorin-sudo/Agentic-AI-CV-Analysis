@@ -97,14 +97,31 @@ class JDParserAgent(JDValidationMixin, JDLLMCoreMixin):
         print(f"🧠 Using {self.llm_provider} model: {self.model_name}")
         
         if len(job_text.strip()) < 20:
-            return self._create_error_result("Input Too Short", job_text, 
-                                           f"Input text too short: {len(job_text)} characters")
+            return ParsedJobDescription(
+                job_title="Parsing Error",
+                company_name="Input Too Short",
+                location="",
+                job_summary=[],
+                required_skills=[],
+                preferred_skills=[],
+                required_experience=[],
+                required_education=[],
+                required_qualifications=[],
+                preferred_qualifications=[],
+                key_responsibilities=[],
+                work_environment=[],
+                company_info=[],
+                team_info=[],
+                benefits=[],
+                confidence_score=0.0,
+                parsing_notes=[f"Input text too short: {len(job_text)} characters"],
+                raw_text=job_text
+            )
         
         try:
             # Add address markup for better parsing
             processed_text = self._add_address_markup(job_text)
-            lines_count = len(processed_text.split('\n'))
-            print(f"🔖 Added address markup to JD text: {lines_count} lines processed")
+            print(f"🔖 Added address markup to JD text: {len(processed_text.split('\n'))} lines processed")
             
             # Format prompt
             formatted_prompt = self.parsing_prompt.format(job_text=processed_text)
@@ -124,7 +141,26 @@ class JDParserAgent(JDValidationMixin, JDLLMCoreMixin):
             
         except Exception as e:
             print(f"❌ Error during parsing: {str(e)}")
-            return self._create_error_result("LLM Processing Failed", job_text, f"Error: {str(e)}")
+            return ParsedJobDescription(
+                job_title="Parsing Error",
+                company_name="LLM Processing Failed",
+                location="",
+                job_summary=[],
+                required_skills=[],
+                preferred_skills=[],
+                required_experience=[],
+                required_education=[],
+                required_qualifications=[],
+                preferred_qualifications=[],
+                key_responsibilities=[],
+                work_environment=[],
+                company_info=[],
+                team_info=[],
+                benefits=[],
+                confidence_score=0.0,
+                parsing_notes=[f"Error: {str(e)}"],
+                raw_text=job_text
+            )
     
     def _add_address_markup(self, text: str) -> str:
         """Add markup for better address detection"""
@@ -139,8 +175,21 @@ class JDParserAgent(JDValidationMixin, JDLLMCoreMixin):
                 print(f"📄 Loaded saved default prompt from {self.prompt_file}")
                 return prompt
         
-        # Fallback if file doesn't exist
-        return "Parse job description as JSON with required fields: {job_text}"
+        # Fallback prompt if file doesn't exist
+        return """Parse the following job description and extract structured information as JSON:
+
+{job_text}
+
+Return ONLY a valid JSON object with these exact fields:
+- job_title, company_name, location
+- job_summary, required_skills, preferred_skills
+- required_experience, required_education
+- required_qualifications, preferred_qualifications  
+- key_responsibilities, work_environment
+- company_info, team_info, benefits
+- confidence_score (0.0-1.0), parsing_notes
+
+Ensure all fields are present and lists are used appropriately."""
     
     def get_prompt(self) -> str:
         """Get current parsing prompt"""
@@ -169,19 +218,30 @@ class JDParserAgent(JDValidationMixin, JDLLMCoreMixin):
     def to_json(self, result: ParsedJobDescription, indent: int = 2) -> str:
         """Convert result to JSON string"""
         return json.dumps(asdict(result), indent=indent, ensure_ascii=False)
-    
-    def _create_error_result(self, company_name: str, raw_text: str, note: str) -> ParsedJobDescription:
-        """Create standardized error result"""
-        return ParsedJobDescription(
-            job_title="Parsing Error", company_name=company_name, location="",
-            job_summary=[], required_skills=[], preferred_skills=[],
-            required_experience=[], required_education=[], required_qualifications=[],
-            preferred_qualifications=[], key_responsibilities=[], work_environment=[],
-            company_info=[], team_info=[], benefits=[], confidence_score=0.0,
-            parsing_notes=[note], raw_text=raw_text
-        )
 
 
 if __name__ == "__main__":
     print("🤖 JD Parser Agent v2.0.0 - LLM-Based Parsing")
-    print("Use python3 sample_test.py for testing")
+    print("=" * 50)
+    
+    # Sample test
+    sample_jd = """
+    Senior Software Engineer - Full Stack
+    TechCorp Solutions
+    
+    We are looking for a Senior Software Engineer to join our innovative team.
+    
+    Required:
+    - 5+ years software development experience
+    - Proficiency in Python, JavaScript, React
+    - Bachelor's degree in Computer Science
+    
+    Responsibilities:
+    - Build scalable web applications
+    - Lead code reviews
+    - Mentor junior developers
+    """
+    
+    agent = JDParserAgent()
+    result = agent.parse_job_description(sample_jd)
+    print(f"\n🎯 Parsed: {result.job_title} at {result.company_name}")

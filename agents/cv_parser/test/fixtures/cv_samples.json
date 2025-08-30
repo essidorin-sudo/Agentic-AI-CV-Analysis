@@ -1,0 +1,137 @@
+{
+  "realistic_cvs": [
+    {
+      "id": "cv_001",
+      "full_name": "Sarah Chen",
+      "email": "sarah.chen@email.com",
+      "phone": "(415) 555-0123",
+      "location": "San Francisco, CA",
+      "linkedin_url": "https://linkedin.com/in/sarahchen",
+      "portfolio_url": "https://sarahchen.dev",
+      "professional_summary": [
+        "Full-stack developer with 7 years of experience in React and Node.js",
+        "Led development of 3 major web applications serving 100K+ users",
+        "Expert in modern JavaScript, TypeScript, and cloud deployment"
+      ],
+      "key_skills": [
+        "JavaScript", "TypeScript", "React", "Node.js", "Express",
+        "PostgreSQL", "MongoDB", "Docker", "AWS", "Git", "Jest", "GraphQL"
+      ],
+      "work_experience": [
+        {
+          "company": "TechStart Inc",
+          "position": "Senior Full Stack Developer",
+          "duration": "2021-2024",
+          "responsibilities": [
+            "Developed React-based dashboard serving 50K+ daily active users",
+            "Built RESTful APIs and GraphQL services using Node.js",
+            "Implemented automated testing with Jest and Cypress",
+            "Mentored 2 junior developers on best practices"
+          ]
+        },
+        {
+          "company": "WebSolutions LLC",
+          "position": "Frontend Developer",
+          "duration": "2019-2021",
+          "responsibilities": [
+            "Created responsive web interfaces using React and CSS3",
+            "Integrated third-party APIs and payment systems",
+            "Optimized application performance improving load times by 40%"
+          ]
+        }
+      ],
+      "education": [
+        {
+          "institution": "Stanford University",
+          "degree": "Master of Science", 
+          "field": "Computer Science",
+          "graduation": "2019",
+          "gpa": "3.9"
+        }
+      ],
+      "certifications": [
+        "AWS Certified Solutions Architect",
+        "Google Cloud Professional Developer"
+      ],
+      "projects": [
+        {
+          "name": "Task Management Platform",
+          "description": "Built collaborative task management app with real-time updates",
+          "technologies": "React, Node.js, Socket.io, PostgreSQL",
+          "url": "https://github.com/sarahchen/taskmanager"
+        }
+      ],
+      "languages": ["English (Native)", "Mandarin (Fluent)"],
+      "achievements": [
+        "Winner of 2023 Company Innovation Award",
+        "Speaker at React Conference 2022"
+      ],
+      "confidence_score": 0.95
+    },
+    {
+      "id": "cv_002", 
+      "full_name": "Michael Rodriguez",
+      "email": "m.rodriguez@email.com",
+      "phone": "(555) 987-6543",
+      "location": "Austin, TX",
+      "linkedin_url": "https://linkedin.com/in/michaelrodriguez",
+      "portfolio_url": "",
+      "professional_summary": [
+        "Backend engineer with 4 years specializing in Python and microservices",
+        "Experience building scalable APIs serving millions of requests daily",
+        "Strong background in data engineering and machine learning pipelines"
+      ],
+      "key_skills": [
+        "Python", "Django", "Flask", "FastAPI", "PostgreSQL", "Redis",
+        "Docker", "Kubernetes", "AWS", "Machine Learning", "Apache Airflow"
+      ],
+      "work_experience": [
+        {
+          "company": "DataCorp Systems",
+          "position": "Backend Developer",
+          "duration": "2020-2024",
+          "responsibilities": [
+            "Developed Python microservices handling 5M+ daily transactions",
+            "Built ML data pipelines using Apache Airflow and Pandas", 
+            "Implemented caching strategies reducing API response time by 60%",
+            "Managed PostgreSQL databases and Redis caching layers"
+          ]
+        }
+      ],
+      "education": [
+        {
+          "institution": "University of Texas at Austin",
+          "degree": "Bachelor of Science",
+          "field": "Computer Science", 
+          "graduation": "2020",
+          "gpa": "3.7"
+        }
+      ],
+      "certifications": [
+        "AWS Certified Developer Associate"
+      ],
+      "confidence_score": 0.88
+    }
+  ],
+  "edge_case_cvs": [
+    {
+      "id": "cv_minimal",
+      "full_name": "John Doe",
+      "email": "john@email.com", 
+      "phone": "",
+      "location": "",
+      "key_skills": ["Python"],
+      "work_experience": [],
+      "education": [],
+      "confidence_score": 0.3
+    },
+    {
+      "id": "cv_malformed",
+      "full_name": "",
+      "email": "invalid-email",
+      "key_skills": [],
+      "parsing_notes": ["Malformed CV data for testing error handling"],
+      "confidence_score": 0.1
+    }
+  ]
+}

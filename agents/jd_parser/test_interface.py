@@ -551,11 +551,31 @@ def fetch_job_description_with_selenium(url):
         
         # Set up the Chrome driver using WebDriver Manager with explicit version handling
         try:
+            # Force a fresh download to fix compatibility issues
+            import os
+            os.environ['WDM_FORCE_RESTART'] = '1'
             service = Service(ChromeDriverManager().install())
         except Exception as e:
-            print(f"⚠️  ChromeDriverManager failed: {e}, trying system chromedriver")
-            # Fallback to system chromedriver if WebDriverManager fails
-            service = Service('/usr/local/bin/chromedriver')  # or wherever chromedriver is installed
+            print(f"⚠️  ChromeDriverManager failed: {e}")
+            # Try alternative paths
+            possible_paths = [
+                '/usr/local/bin/chromedriver',
+                '/opt/homebrew/bin/chromedriver',
+                '/usr/bin/chromedriver'
+            ]
+            
+            service = None
+            for path in possible_paths:
+                if os.path.exists(path):
+                    try:
+                        service = Service(path)
+                        print(f"✅ Using ChromeDriver at: {path}")
+                        break
+                    except:
+                        continue
+            
+            if not service:
+                raise Exception("No working ChromeDriver found")
             
         driver = webdriver.Chrome(service=service, options=chrome_options)
         
@@ -691,10 +711,17 @@ def fetch_job_description_from_url(url):
             'vue'  # Sites that mention SPA frameworks
         ]
         
-        needs_selenium = any(domain in parsed_url.netloc.lower() for domain in js_heavy_domains)
+        # Special handling: Don't use Selenium for sites with known Cloudflare protection
+        cloudflare_protected_domains = [
+            'servicenow.com',
+            'careers.servicenow.com'
+        ]
         
-        # Use Selenium directly for known JavaScript-heavy sites
-        if needs_selenium and SELENIUM_AVAILABLE:
+        needs_selenium = any(domain in parsed_url.netloc.lower() for domain in js_heavy_domains)
+        is_cloudflare_protected = any(domain in parsed_url.netloc.lower() for domain in cloudflare_protected_domains)
+        
+        # Use Selenium directly for known JavaScript-heavy sites (but not for Cloudflare-protected ones)
+        if needs_selenium and SELENIUM_AVAILABLE and not is_cloudflare_protected:
             print(f"🌐 Detected JavaScript-heavy site {parsed_url.netloc}, using Selenium...")
             return fetch_job_description_with_selenium(url)
         
@@ -732,8 +759,8 @@ def fetch_job_description_from_url(url):
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 403:
                     if attempt == max_retries - 1:
-                        # If Selenium is available, try it as fallback
-                        if SELENIUM_AVAILABLE:
+                            # Only try Selenium if not Cloudflare protected
+                        if SELENIUM_AVAILABLE and not any(domain in parsed_url.netloc.lower() for domain in ['servicenow.com', 'careers.servicenow.com']):
                             print("🔄 Standard scraping blocked, trying Selenium fallback...")
                             return fetch_job_description_with_selenium(url)
                         raise Exception(f"Access denied (403 Forbidden). The website '{parsed_url.netloc}' is blocking automated requests. Please try copying the job description content directly instead of using the URL.")
@@ -748,8 +775,8 @@ def fetch_job_description_from_url(url):
                     raise Exception(f"HTTP {response.status_code}: {str(e)}")
             except requests.exceptions.RequestException as e:
                 if attempt == max_retries - 1:
-                    # If Selenium is available, try it as fallback
-                    if SELENIUM_AVAILABLE:
+                    # Only try Selenium if not Cloudflare protected
+                    if SELENIUM_AVAILABLE and not any(domain in parsed_url.netloc.lower() for domain in ['servicenow.com', 'careers.servicenow.com']):
                         print("🔄 Network error, trying Selenium fallback...")
                         return fetch_job_description_with_selenium(url)
                     raise e
@@ -831,6 +858,15 @@ def fetch_job_description_from_url(url):
         chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
         text = ' '.join(chunk for chunk in chunks if chunk)
         
+        # Remove Unicode characters that can break JSON parsing
+        import unicodedata
+        text = ''.join(char for char in text if unicodedata.category(char)[0] != 'C' or char in '\n\r\t')
+        
+        # Remove private use area characters (like icon fonts)
+        text = re.sub(r'[\uE000-\uF8FF]', '', text)  # Private Use Area
+        text = re.sub(r'[\U000F0000-\U000FFFFD]', '', text)  # Supplementary Private Use Area A
+        text = re.sub(r'[\U00100000-\U0010FFFD]', '', text)  # Supplementary Private Use Area B
+        
         # Try to identify job description specific content
         # Look for common job posting patterns
         jd_patterns = [
@@ -845,7 +881,7 @@ def fetch_job_description_from_url(url):
         ]
         
         # If the text is very long, try to extract relevant sections
-        if len(text) > 5000:
+        if len(text) > 8000:  # Reduced from 5000 to be more aggressive
             text_lower = text.lower()
             
             # Find the start of job description content
@@ -858,7 +894,10 @@ def fetch_job_description_from_url(url):
             
             # Extract a reasonable chunk around the job description
             if start_pos > 0:
-                text = text[start_pos:start_pos + 4000]
+                text = text[start_pos:start_pos + 6000]  # Increased from 4000 but still manageable
+            else:
+                # If no pattern found, take first 6000 chars after removing common noise
+                text = text[:6000]
         
         # Final cleanup
         text = re.sub(r'\s+', ' ', text).strip()
@@ -931,6 +970,32 @@ def fetch_job_description_from_url(url):
                     print(f"✅ Using metadata fallback content ({len(fallback_content)} chars)")
                     return fallback_content
             
+            # Special handling for ServiceNow careers - provide informative fallback
+            if 'servicenow.com' in url:
+                print(f"🔍 ServiceNow careers site detected - providing informative fallback")
+                fallback_content = f"""
+                JOB POSTING - ServiceNow Careers Site
+                
+                URL: {url}
+                Issue: ServiceNow careers pages are protected by Cloudflare anti-bot security that blocks automated access.
+                
+                EXTRACTED INFORMATION:
+                - Company: ServiceNow
+                - Job ID: {url.split('/')[-2] if '/' in url else 'Unknown'}
+                - Position: {url.split('/')[-1].replace('-', ' ').title() if '/' in url else 'Unknown'}
+                
+                RECOMMENDATION: 
+                To get the full job description, please:
+                1. Open the ServiceNow careers page in your browser
+                2. Copy the complete job description text 
+                3. Paste it into the text field instead of using the URL
+                
+                This will bypass the anti-bot protection and ensure you get the complete job requirements and description for accurate CV analysis.
+                
+                Note: ServiceNow recently implemented Cloudflare protection to prevent automated scraping of their job postings.
+                """
+                return fallback_content
+            
             # Special handling for Microsoft careers - provide informative fallback
             if 'microsoft.com' in url:
                 print(f"🔍 Microsoft careers site detected - providing informative fallback")
@@ -964,6 +1029,18 @@ def fetch_job_description_from_url(url):
         raise Exception(f"Failed to fetch URL: {str(e)}")
     except Exception as e:
         raise Exception(f"Error processing content: {str(e)}")
+
+
+@app.route('/status')
+def status():
+    """Status endpoint for service health checks"""
+    return jsonify({
+        'success': True,
+        'agent': 'jd_parser',
+        'version': jd_agent.version,
+        'status': 'online',
+        'capabilities': ['url_parsing', 'text_parsing', 'llm_processing']
+    })
 
 
 if __name__ == '__main__':

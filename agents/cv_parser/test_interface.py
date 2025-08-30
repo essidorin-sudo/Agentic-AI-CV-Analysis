@@ -575,6 +575,18 @@ def _find_common_items(results, field_name):
     return list(first_items)
 
 
+@app.route('/status')
+def status():
+    """Status endpoint for service health checks"""
+    return jsonify({
+        'success': True,
+        'agent': 'cv_parser',
+        'version': cv_agent.version,
+        'status': 'online',
+        'capabilities': ['file_parsing', 'text_parsing', 'llm_processing']
+    })
+
+
 if __name__ == '__main__':
     # Create templates directory if it doesn't exist
     templates_dir = Path(__file__).parent / 'templates'

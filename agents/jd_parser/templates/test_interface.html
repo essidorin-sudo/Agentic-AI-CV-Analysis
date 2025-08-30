@@ -1003,7 +1003,7 @@
                 return;
             }
 
-            showSingleLoading();
+            showSingleLoading(content.url);
 
             try {
                 const requestData = {
@@ -1011,13 +1011,20 @@
                     ...(content.url ? { jd_url: content.url } : { jd_text: content.text })
                 };
 
+                // Create AbortController for timeout handling
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout
+                
                 const response = await fetch('/parse_with_prompt', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(requestData)
+                    body: JSON.stringify(requestData),
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
 
                 const data = await response.json();
 
@@ -1028,7 +1035,11 @@
                 }
 
             } catch (error) {
-                displaySingleError('Network error: ' + error.message);
+                if (error.name === 'AbortError') {
+                    displaySingleError('Request timed out after 5 minutes. This URL may have complex JavaScript protection that prevents scraping.');
+                } else {
+                    displaySingleError('Network error: ' + error.message);
+                }
             }
         }
 
@@ -1050,24 +1061,35 @@
                 return;
             }
 
-            showComparisonLoading();
+            showComparisonLoading(content.url);
 
             try {
                 const baseRequest = content.url ? { jd_url: content.url } : { jd_text: content.text };
+                
+                // Create AbortController for timeout handling (longer for comparisons)
+                const controllerA = new AbortController();
+                const controllerB = new AbortController();
+                const timeoutIdA = setTimeout(() => controllerA.abort(), 300000); // 5 minute timeout
+                const timeoutIdB = setTimeout(() => controllerB.abort(), 300000); // 5 minute timeout
                 
                 // Run both prompts in parallel
                 const [responseA, responseB] = await Promise.all([
                     fetch('/parse_with_prompt', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ...baseRequest, prompt: promptA })
+                        body: JSON.stringify({ ...baseRequest, prompt: promptA }),
+                        signal: controllerA.signal
                     }),
                     fetch('/parse_with_prompt', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ...baseRequest, prompt: promptB })
+                        body: JSON.stringify({ ...baseRequest, prompt: promptB }),
+                        signal: controllerB.signal
                     })
                 ]);
+                
+                clearTimeout(timeoutIdA);
+                clearTimeout(timeoutIdB);
 
                 const dataA = await responseA.json();
                 const dataB = await responseB.json();
@@ -1082,7 +1104,11 @@
                 );
 
             } catch (error) {
-                displayComparisonError('Network error: ' + error.message);
+                if (error.name === 'AbortError') {
+                    displayComparisonError('One or both requests timed out after 5 minutes. This URL may have complex JavaScript protection that prevents scraping.');
+                } else {
+                    displayComparisonError('Network error: ' + error.message);
+                }
             }
         }
 
@@ -1132,15 +1158,25 @@
         }
 
         // Display functions
-        function showSingleLoading() {
-            document.getElementById('json-output').innerHTML = '<div class="loading">Analyzing with LLM...</div>';
-            document.getElementById('structured-output').innerHTML = '<div class="loading">Processing job description...</div>';
+        function showSingleLoading(isUrl = false) {
+            if (isUrl) {
+                document.getElementById('json-output').innerHTML = '<div class="loading">🌐 Scraping job posting...<br><small>This may take 1-5 minutes for complex sites</small></div>';
+                document.getElementById('structured-output').innerHTML = '<div class="loading">📄 Processing URL content...<br><small>Please wait while we extract the job details</small></div>';
+            } else {
+                document.getElementById('json-output').innerHTML = '<div class="loading">Analyzing with LLM...</div>';
+                document.getElementById('structured-output').innerHTML = '<div class="loading">Processing job description...</div>';
+            }
         }
 
-        function showComparisonLoading() {
+        function showComparisonLoading(isUrl = false) {
             ['a', 'b'].forEach(suffix => {
-                document.getElementById(`json-output-${suffix}`).innerHTML = '<div class="loading">Analyzing...</div>';
-                document.getElementById(`structured-output-${suffix}`).innerHTML = '<div class="loading">Processing...</div>';
+                if (isUrl) {
+                    document.getElementById(`json-output-${suffix}`).innerHTML = '<div class="loading">🌐 Scraping job posting...</div>';
+                    document.getElementById(`structured-output-${suffix}`).innerHTML = '<div class="loading">📄 Processing URL...</div>';
+                } else {
+                    document.getElementById(`json-output-${suffix}`).innerHTML = '<div class="loading">Analyzing...</div>';
+                    document.getElementById(`structured-output-${suffix}`).innerHTML = '<div class="loading">Processing...</div>';
+                }
             });
         }
 
